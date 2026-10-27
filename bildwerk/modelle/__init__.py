@@ -9,6 +9,9 @@ from __future__ import annotations
 import importlib
 from types import ModuleType
 
+# Kennung eines Dienstes im Maschinenraum (Name seiner Dienstdatei): bildwerk-<modell>
+DIENST_PRAEFIX = "bildwerk-"
+
 MODELLE: dict[str, str] = {
     "moss-image": "bildwerk.modelle.moss_image",
 }
@@ -16,3 +19,7 @@ MODELLE: dict[str, str] = {
 
 def modul(kennung: str) -> ModuleType:
     return importlib.import_module(MODELLE[kennung])
+
+
+def dienstkennung(kennung: str) -> str:
+    return DIENST_PRAEFIX + kennung

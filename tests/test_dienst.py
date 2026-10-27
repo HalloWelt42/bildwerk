@@ -84,6 +84,8 @@ def test_vorgaben_und_startwerte():
         a = m.auftraege[-1]
         assert (a.breite, a.hoehe, a.schritte, len(a.seeds)) == (1024, 1024, 50, 1) and 0 <= a.seeds[0] < SEED_GRENZE
         assert r.json()["x-bildwerk"]["seed"] == a.seeds[0]
+        for name in ("moss-image", "bildwerk-moss-image", "OpenMOSS-Team/MOSS-Image-SFT"):
+            assert c.post("/v1/images/generations", json={"prompt": "Katze", "model": name}).status_code == 200
     assert startwerte(SEED_GRENZE - 1, 2) == [SEED_GRENZE - 1, 0]
 
 
@@ -208,7 +210,7 @@ def test_motor_bricht_ab_und_raeumt_auf():
     assert len(motor.m.aufrufe) == 2 and motor.m.prompt_cache == {} and motor._wache.signal is None
     assert motor.m.aufrufe[0] | {"seed": 0} == {"seed": 0, "prompt": "Katze", "num_inference_steps": 8, "width": 512, "height": 512,
                                                 "guidance": 3.0}
-    bilder = moss_image.Motor.erzeugen(motor, auftrag.model_copy(update={"seeds": [5]}), threading.Event())
+    bilder = motor.erzeugen(auftrag.model_copy(update={"seeds": [5]}), threading.Event())
     assert [b.size for b in bilder] == [(512, 512)] and motor.m.prompt_cache == {}
 
 

@@ -48,7 +48,7 @@ Felder von `POST /v1/images/generations` (unbekannte Felder werden überlesen):
 | `n` | nein | Anzahl 1 bis 4, Vorgabe 1 |
 | `seed` | nein | Startwert 0 bis 2^53 - 1; Bild i rechnet mit `seed + i`; fehlt er, wird einer gezogen |
 | `steps` | nein | Schritte; fehlen sie, gilt die Vorgabe des Modells |
-| `model` | nein | wenn gesetzt, muss es das Modell des Dienstes nennen (`moss-image`), sonst `409` |
+| `model` | nein | wenn gesetzt, muss es das Modell des Dienstes nennen (`moss-image`, `MOSS-Image-SFT` oder die Kennung des Dienstes im Maschinenraum, `bildwerk-moss-image`), sonst `409` |
 | `response_format` | nein | nur `b64_json` |
 
 ```json

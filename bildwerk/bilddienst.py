@@ -28,6 +28,7 @@ from PIL import Image
 from .bildformat import (SEED_GRENZE, Bildanfrage, Bildantwort, Bildauftrag, Bilddaten, Bildzusatz, Modelleintrag, Modellangaben,
                          Modellliste, Quelle, Rechenwerk, Steckbrief)
 from .gewichte import Gewichtsstand, Pruefliste
+from .modelle import dienstkennung
 from .unterbau import Einstellungen, Rechner, anwendung, verbindung_beobachten
 
 
@@ -76,7 +77,8 @@ def erstellen(dienst: str, motor: Motor, einstellungen: Einstellungen | None = N
     erschienen = int(datetime.combine(a.erschienen, datetime.min.time(), tzinfo=timezone.utc).timestamp())
 
     def auftrag_aus(anfrage: Bildanfrage) -> Bildauftrag:
-        if anfrage.model and not a.meint(anfrage.model):
+        # als model gilt das Modell selbst oder die Kennung des Dienstes im Maschinenraum (so nennt ihn die Leitstelle)
+        if anfrage.model and not (a.meint(anfrage.model) or anfrage.model == dienstkennung(a.kennung)):
             raise HTTPException(409, f"Dieser Dienst hält {a.kennung}; für {anfrage.model} den Dienst dieses Modells nehmen.")
         try:
             breite, hoehe = a.groessen.kanten(anfrage.size or a.groessen.vorgabe)

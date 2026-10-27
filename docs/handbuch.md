@@ -10,7 +10,7 @@ sicherung:
   - "das Repo liegt bisher nur auf dem Mac (keine entfernte Ablage): der Ordner gehört zur Sicherung des Macs"
 schluessel_orte: []
 einrichten: einrichten.sh
-stand: 439fc5a
+stand: d43fd8b
 ---
 
 # Bildwerk
@@ -45,9 +45,8 @@ fehlen nur Umgebung und Dienstdatei. Frisch: Ordner zurückspielen, Installation
 
 ### 1. Ordner und Installation
 
-Das Repo hat noch keine entfernte Ablage; der Ordner {{ordner}} kommt aus der Sicherung des Macs. Dann:
-
 ```
+git clone {{repo}} {{ordner}}
 cd {{ordner}} && ./einrichten.sh
 ```
 

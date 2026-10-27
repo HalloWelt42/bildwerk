@@ -37,7 +37,7 @@ Jeder Dienst, gleich welches Modell:
 | `POST /v1/images/generations` | Bilder aus Text; Antwort `data[].b64_json` (PNG) |
 | `POST /v1/images/edits` | Bilder bearbeiten; kann das Modell es nicht, `501` mit Grund |
 | `GET /v1/models` | das eine Modell des Dienstes mit Steckbrief |
-| `GET /gesundheit` | `200` bereit (oder Probemodus), sonst `503` mit `zustand` laedt oder gestoert |
+| `GET /gesundheit` | `200` bereit (oder Probemodus), sonst `503` mit `zustand` `laedt` oder `gestoert` |
 
 Felder von `POST /v1/images/generations` (unbekannte Felder werden überlesen):
 

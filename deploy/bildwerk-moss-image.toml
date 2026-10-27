@@ -1,0 +1,21 @@
+# Bildwerk: MOSS-Image. Je Prozess genau ein Modell; es lädt beim Start, laufen heißt geladen.
+# Der Dienst startet nie von selbst: Starten und Anhalten nur über den Maschinenraum, wenn die Leitstelle es verlangt.
+# installieren.sh legt diese Datei als ~/Maschinenraum/dienste/bildwerk-moss-image.toml an (ordner auf den Klon gesetzt).
+name = "Bildwerk MOSS-Image"
+beschreibung = "Bilder aus Text mit MOSS-Image (SFT): lange Beschreibungen, Schrift im Bild, Anordnung per JSON; kein Bearbeiten"
+ordner = "~/Entwicklung/Werkzeuge/Bildwerk"
+befehl = [".venv/bin/python", "-m", "bildwerk", "moss-image", "--port", "$MASCHINENRAUM_PORT"]
+port = 8791
+pruefadresse = "http://127.0.0.1:8791/gesundheit"
+faehigkeiten = ["bild_erzeugen"]
+eignung = ["gruendlich"]
+sprachen = ["en", "zh"]
+# Schätzung bis zur ersten Messung: in 8 Bit rund 15 GB Gewichte (Transformer 4,9 und Textkodierer 9 Mrd. Parameter),
+# dazu die Rechnung je Bild und das Laden, das die bf16-Gewichte (27 GB auf der Platte) liest und dann quantisiert
+speicher_gb = 24
+startzeit_s = 300
+anhaltezeit_s = 30
+
+[umgebung]
+HF_HUB_OFFLINE = "1"
+BILDWERK_QUANTISIERUNG = "8bit"

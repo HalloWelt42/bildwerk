@@ -1,0 +1,87 @@
+{
+  "repo": "OpenMOSS-Team/MOSS-Image-SFT",
+  "revision": "f972bd4b4b9e3852133cc5da954d87bc32cd8fb9",
+  "lizenz": "Apache-2.0",
+  "dateien": [
+    {
+      "pfad": "text_encoder/config.json",
+      "groesse": 2813,
+      "git_sha1": "a745bd0815eddf6b913e3a4ecf9cc9ed5f5f5625"
+    },
+    {
+      "pfad": "text_encoder/model-00001-of-00004.safetensors",
+      "groesse": 4973910744,
+      "sha256": "abfaa3d3a8612508c85ee8f6da9c734b862f10298b903765c4ad384177c32b0b"
+    },
+    {
+      "pfad": "text_encoder/model-00002-of-00004.safetensors",
+      "groesse": 4988364288,
+      "sha256": "9112637fa6bf4d07bafd6ae268852b18d3d0c1242f4ee901c5579006e5bd4894"
+    },
+    {
+      "pfad": "text_encoder/model-00003-of-00004.safetensors",
+      "groesse": 4954202112,
+      "sha256": "956f1ef51d0cfe610b0d22987c0b7821c36e3ce228abceccef523518bcf079dc"
+    },
+    {
+      "pfad": "text_encoder/model-00004-of-00004.safetensors",
+      "groesse": 1869001848,
+      "sha256": "9e21d20e8adde88c3e0b65d4a0d251f143d98ee9d52db36b4348361091e4e208"
+    },
+    {
+      "pfad": "text_encoder/model.safetensors.index.json",
+      "groesse": 64641,
+      "git_sha1": "f0ed1b0ede41b6f8b6e1170abebf8d4468a93779"
+    },
+    {
+      "pfad": "tokenizer/chat_template.jinja",
+      "groesse": 7756,
+      "git_sha1": "a585dec894e63da457d9440ec6aa7caa16d20860"
+    },
+    {
+      "pfad": "tokenizer/tokenizer.json",
+      "groesse": 19989325,
+      "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523"
+    },
+    {
+      "pfad": "tokenizer/tokenizer_config.json",
+      "groesse": 1123,
+      "git_sha1": "6913705fa6a05ee4498df98d776803ba8b39f413"
+    },
+    {
+      "pfad": "transformer/config.json",
+      "groesse": 240,
+      "git_sha1": "09ba6435c9566086eab63a37366157a97d9fa2d8"
+    },
+    {
+      "pfad": "transformer/diffusion_pytorch_model-00001-of-00003.safetensors",
+      "groesse": 4991978016,
+      "sha256": "e40d3444940a0b0fd7cd45ba7959a5bd3d5efd7ddf87aae5ce4d87ce8aa03d01"
+    },
+    {
+      "pfad": "transformer/diffusion_pytorch_model-00002-of-00003.safetensors",
+      "groesse": 4983137016,
+      "sha256": "d106da790ec2924ffd8af04b4ffa8f8de281a974b58e55649c3ec596dc8ef033"
+    },
+    {
+      "pfad": "transformer/diffusion_pytorch_model-00003-of-00003.safetensors",
+      "groesse": 189549184,
+      "sha256": "11f637ab17c7093344a6110a1e87ffda8e56558dc55183d8e790222cfcdcf52d"
+    },
+    {
+      "pfad": "transformer/diffusion_pytorch_model.safetensors.index.json",
+      "groesse": 40298,
+      "git_sha1": "97208f5194db604c0b57f5d3a983dc7ce0e53bb5"
+    },
+    {
+      "pfad": "vae/config.json",
+      "groesse": 838,
+      "git_sha1": "3c982a055138a9d5b52bac025c1831949c489a92"
+    },
+    {
+      "pfad": "vae/diffusion_pytorch_model.safetensors",
+      "groesse": 249521372,
+      "sha256": "c3bdf94dc67ec69b30ea9fe1fa8340085679cae64d019f7c7e4a9921f1a7f17a"
+    }
+  ]
+}

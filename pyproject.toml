@@ -1,0 +1,37 @@
+[project]
+name = "bildwerk"
+description = "Bildwerk: Bilddienste je Modell (Bilder erzeugen im üblichen Bildformat), jeder ein eigener Prozess"
+requires-python = ">=3.11"
+dynamic = ["version"]
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.4",
+  "pillow>=11",
+  "huggingface-hub>=1.1",
+]
+
+[project.optional-dependencies]
+# Rechenwerk der Bildmodelle: mflux (MLX) auf genau einem Commit, nie ein Zweig. Einzige Stelle des Pins; ein neuer
+# Stand verlangt neue Prüflisten (bildwerk pruefliste <modell>), die Tests halten beides gegeneinander.
+mflux = ["mflux @ git+https://github.com/mflux-community/mflux.git@052f37f2bf5e9bbcd13b41c597616f09ac4eb8d7"]
+test = ["pytest>=8", "pytest-asyncio>=0.24", "httpx>=0.27"]
+
+[project.scripts]
+bildwerk = "bildwerk.__main__:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q -p no:cacheprovider --basetemp=.test-tmp"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.setuptools.packages.find]
+include = ["bildwerk*"]
+
+[tool.setuptools.package-data]
+"bildwerk.modelle" = ["*.json"]
+
+[tool.setuptools.dynamic]
+version = {attr = "bildwerk.__version__"}

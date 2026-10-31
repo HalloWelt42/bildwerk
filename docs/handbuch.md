@@ -10,7 +10,7 @@ sicherung:
   - "das Repo liegt bisher nur auf dem Mac (keine entfernte Ablage): der Ordner gehört zur Sicherung des Macs"
 schluessel_orte: []
 einrichten: einrichten.sh
-stand: d43fd8b
+stand: 60ff107
 ---
 
 # Bildwerk
@@ -25,6 +25,9 @@ verlangt; sie entscheidet über Laden, Entladen und Vorrang, und Apps (auch der 
 | Dienst | Fähigkeit | Modell |
 |---|---|---|
 | moss-image | bild_erzeugen | MOSS-Image-SFT (Apache-2.0), 8 Bit, gerechnet mit mflux (MLX); Bilder aus Text, kein Bearbeiten |
+
+Sichtbar heißt der Dienst nach seinem Modell ("MOSS-Image", `name` der Dienstdatei); Maschinenraum, Leitstelle und
+Apps setzen die Aufgabe klein dahinter ("MOSS-Image · Bilderzeugung"). Die Kennung `bildwerk-moss-image` bleibt.
 
 Alle Dienste sprechen dieselbe Schnittstelle im üblichen Bildformat (`POST /v1/images/generations`,
 `POST /v1/images/edits`, `GET /v1/models` mit Steckbrief, `GET /gesundheit`); Einzelheiten im README des Repos. Port

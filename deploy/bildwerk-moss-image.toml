@@ -1,7 +1,7 @@
 # Bildwerk: MOSS-Image. Je Prozess genau ein Modell; es lädt beim Start, laufen heißt geladen.
 # Der Dienst startet nie von selbst: Starten und Anhalten nur über den Maschinenraum, wenn die Leitstelle es verlangt.
 # installieren.sh legt diese Datei als ~/Maschinenraum/dienste/bildwerk-moss-image.toml an (ordner auf den Klon gesetzt).
-name = "Bildwerk MOSS-Image"
+name = "MOSS-Image"
 beschreibung = "Bilder aus Text mit MOSS-Image (SFT): lange Beschreibungen, Schrift im Bild, Anordnung per JSON; kein Bearbeiten"
 ordner = "~/Entwicklung/Werkzeuge/Bildwerk"
 befehl = [".venv/bin/python", "-m", "bildwerk", "moss-image", "--port", "$MASCHINENRAUM_PORT"]

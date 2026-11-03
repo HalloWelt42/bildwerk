@@ -3,7 +3,9 @@
 FLUX.2 klein 9B ist ein destillierter Diffusions-Transformer mit 9 Milliarden Parametern, Qwen3-8B als Textkodierer
 und dem VAE von FLUX.2. Er rechnet in 4 Schritten mit Führung 1 und nimmt beim Bearbeiten bis zu 4 Bildvorlagen an, an
 deren Stil und Inhalt er sich hält (mflux `Flux2KleinEdit`, Vorlagen als Bezugstoken neben dem Bild). Ohne Vorlage
-erzeugt dieselbe Klasse aus Text. Gedacht für schnelle, einfache Aufgaben und Stilvorlagen.
+rechnet `Flux2KleinEdit` in mflux 0.24.0 nicht (es verbindet die Bildlatenten mit `None`); Aufträge aus Text gehen deshalb
+an `Flux2Klein` über denselben, schon geladenen Gewichten (kein zweites Laden, kein zusätzlicher Speicher). Gedacht für
+schnelle, einfache Aufgaben und Stilvorlagen.
 
 Lizenz: FLUX Non-Commercial License; die Bilder dürfen nur nicht-kommerziell genutzt werden.
 """
@@ -23,7 +25,7 @@ from ..gewichte import Gewichtsstand, Pruefliste, ablage, pruefen
 from ..unterbau import Abgebrochen, Einstellungen, GewichteFehlen, Quantisierung
 from .moss_image import Abbruchwache
 
-PORT = 8792
+PORT = 8794
 PRUEFLISTE = Path(__file__).with_name("flux2_klein.json")
 
 ANGABEN = Modellangaben(
@@ -33,7 +35,9 @@ ANGABEN = Modellangaben(
     zweck="Schnelle Bilder aus Text in 4 Schritten, dazu Bilder nach bis zu 4 Vorlagen (Stil, Bezug, Bearbeiten)",
     kann_bearbeiten=True,
     vorlagen_max=ANZAHL_MAX,
-    eignung=["schnell"],
+    # "schnell" erst wieder nach einer Messung ohne Last daneben: gemessen am 03.11.2026 rund 90 bis 120 s je Bild 1024x1024
+    # in 4 Schritten (docs/messungen/flux2-klein.json), langsamer als laut mflux erwartet
+    eignung=[],
     sprachen=["en"],
     parameter_mrd=9.0,
     textkodierer="Qwen3-8B",
@@ -60,6 +64,18 @@ def mflux_herkunft() -> tuple[str, str, list[str]]:
     return repo, ModelRevisions.get(repo), Flux2KleinWeightDefinition.get_download_patterns()
 
 
+def textmodell(edit: Any) -> Any:
+    """`Flux2Klein` über denselben Teilmodulen und Angaben wie das geladene `Flux2KleinEdit`: beide sind dieselbe Art
+    Modul (Transformer, VAE, Textkodierer aus demselben Initialisierer), nur die Rechnung unterscheidet sich. Teilmodule
+    liegen im Modul selbst (ein dict in MLX), Tokenizer, Rückrufe und Einstellungen im __dict__; beides wird geteilt."""
+    from mflux.models.flux2.variants.txt2img.flux2_klein import Flux2Klein
+
+    text = Flux2Klein.__new__(Flux2Klein)
+    dict.update(text, edit)
+    text.__dict__.update(edit.__dict__)
+    return text
+
+
 class Motor:
     """Hält Flux2KleinEdit aus mflux; geladen wird nur aus der Modellablage, nie aus dem Netz."""
 
@@ -69,6 +85,7 @@ class Motor:
         self.quantisierung: Quantisierung = einstellungen.quantisierung
         self.pruefliste = Pruefliste.lesen(PRUEFLISTE)
         self.m: Any = None
+        self.text: Any = None
         self._wache = Abbruchwache()
 
     def gewichte(self) -> Gewichtsstand:
@@ -83,6 +100,7 @@ class Motor:
 
         self.m = Flux2KleinEdit(quantize=self.quantisierung.bits, model_config=ModelConfig.flux2_klein_9b())
         self.m.callbacks.register(self._wache)
+        self.text = textmodell(self.m)
 
     def erzeugen(self, auftrag: Bildauftrag, abbruch: threading.Event) -> list[Image.Image]:
         self._wache.signal = abbruch
@@ -98,9 +116,13 @@ class Motor:
                 for seed in auftrag.seeds:
                     if abbruch.is_set():
                         raise Abgebrochen(f"vor Bild {len(bilder) + 1}")
-                    ergebnis = self.m.generate_image(seed=seed, prompt=auftrag.beschreibung, num_inference_steps=auftrag.schritte,
-                                                     width=auftrag.breite, height=auftrag.hoehe, guidance=ANGABEN.guidance,
-                                                     image_paths=pfade or None)
+                    if pfade:
+                        ergebnis = self.m.generate_image(seed=seed, prompt=auftrag.beschreibung, num_inference_steps=auftrag.schritte,
+                                                         width=auftrag.breite, height=auftrag.hoehe, guidance=ANGABEN.guidance,
+                                                         image_paths=pfade)
+                    else:
+                        ergebnis = self.text.generate_image(seed=seed, prompt=auftrag.beschreibung, num_inference_steps=auftrag.schritte,
+                                                            width=auftrag.breite, height=auftrag.hoehe, guidance=ANGABEN.guidance)
                     bilder.append(ergebnis.image)
                 return bilder
             finally:

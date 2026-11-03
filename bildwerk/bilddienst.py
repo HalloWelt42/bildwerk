@@ -69,10 +69,12 @@ def startwerte(seed: int | None, anzahl: int) -> list[int]:
     return [(erster + i) % SEED_GRENZE for i in range(anzahl)]
 
 
-def vorlagen_lesen(images: list[str], hoechstens: int) -> list[bytes]:
+def vorlagen_lesen(images: list[str], hoechstens: int, mindestens: int = 0) -> list[bytes]:
     """Die Bildvorlagen aus Base64, jede als Bild geprüft; HTTPException 400 mit dem Grund."""
     if len(images) > hoechstens:
         raise HTTPException(400, f"Höchstens {hoechstens} Vorlagen je Bearbeitung, nicht {len(images)}.")
+    if len(images) < mindestens:
+        raise HTTPException(400, f"Mindestens {mindestens} Vorlage je Bearbeitung, dieses Modell rechnet nur mit Vorlage.")
     vorlagen = []
     for i, wert in enumerate(images, start=1):
         try:
@@ -125,6 +127,8 @@ def erstellen(dienst: str, motor: Motor, einstellungen: Einstellungen | None = N
 
     @app.post("/v1/images/generations", response_model=Bildantwort, response_model_by_alias=True)
     async def generations(anfrage: Bildanfrage, request: Request) -> Bildantwort:
+        if a.vorlagen_min:
+            raise HTTPException(400, f"{a.name} rechnet nur mit Bildvorlage; über /v1/images/edits mit mindestens {a.vorlagen_min} Vorlage.")
         return await ausfuehren(auftrag_aus(anfrage), request)
 
     @app.post("/v1/images/edits", response_model=Bildantwort, response_model_by_alias=True)
@@ -136,7 +140,7 @@ def erstellen(dienst: str, motor: Motor, einstellungen: Einstellungen | None = N
         except ValueError as fehler:
             detail = jsonable_encoder(fehler.errors(include_url=False, include_context=False)) if isinstance(fehler, ValidationError) else "Der Körper ist kein JSON."
             raise HTTPException(422, detail) from None
-        return await ausfuehren(auftrag_aus(anfrage, vorlagen_lesen(anfrage.images, a.vorlagen_max)), request)
+        return await ausfuehren(auftrag_aus(anfrage, vorlagen_lesen(anfrage.images, a.vorlagen_max, a.vorlagen_min)), request)
 
     @app.get("/v1/models", response_model=Modellliste)
     async def modelle() -> Modellliste:

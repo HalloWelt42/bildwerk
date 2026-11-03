@@ -3,6 +3,10 @@
     bildwerk <modell> [--port N] [--probe]               Dienst des Modells (je Prozess genau ein Modell)
     bildwerk gewichte <modell> [--pruefsummen] [--laden] Gewichte in der Modellablage prüfen, mit --laden fehlende laden
     bildwerk pruefliste <modell>                         Prüfliste aus dem gepinnten Stand von mflux neu schreiben (Netz)
+    bildwerk umwandeln <modell> [--original-loeschen]    quantisiert in die eigene Ablage speichern (Modelle mit `lokal`)
+
+Modelle mit eigener, quantisierter Ablage haben zwei Listen: PRUEFLISTE_QUELLE (was aus Hugging Face geladen wird) und
+PRUEFLISTE (die eigene Ablage, aus der der Dienst lädt).
 """
 
 from __future__ import annotations
@@ -26,7 +30,9 @@ def dienst(kennung: str, port: int | None, probe: bool) -> None:
 def gewichte(kennung: str, pruefsummen: bool, laden: bool) -> int:
     from . import gewichte as g
 
-    liste = g.Pruefliste.lesen(modul(kennung).PRUEFLISTE)
+    m = modul(kennung)
+    # mit --laden die Quelle aus Hugging Face, sonst das, woraus der Dienst lädt
+    liste = g.Pruefliste.lesen(m.PRUEFLISTE_QUELLE if laden and hasattr(m, "PRUEFLISTE_QUELLE") else m.PRUEFLISTE)
     wo = g.ablage()
     print(f"{liste.repo} @ {liste.revision}: {len(liste.dateien)} Dateien, {liste.groesse / 1e9:.1f} GB, Ablage {wo}")
     stand = g.pruefen(liste, wo)
@@ -45,9 +51,20 @@ def pruefliste(kennung: str) -> int:
     m = modul(kennung)
     repo, revision, muster = m.mflux_herkunft()
     liste = erstellen(repo, revision, muster, m.ANGABEN.lizenz)
-    liste.schreiben(m.PRUEFLISTE)
-    print(f"{m.PRUEFLISTE.name}: {liste.repo} @ {liste.revision}, {len(liste.dateien)} Dateien, {liste.groesse / 1e9:.1f} GB")
+    ziel = getattr(m, "PRUEFLISTE_QUELLE", m.PRUEFLISTE)
+    liste.schreiben(ziel)
+    print(f"{ziel.name}: {liste.repo} @ {liste.revision}, {len(liste.dateien)} Dateien, {liste.groesse / 1e9:.1f} GB")
     return 0
+
+
+def umwandeln(kennung: str, original_loeschen: bool) -> int:
+    """Quantisiert in die eigene Ablage speichern, die neue Prüfliste schreiben, Probeladen; erst danach auf Wunsch das
+    Original aus dem Zwischenspeicher löschen. Rechnet nichts (kein Bild), braucht aber den Speicher des Modells."""
+    m = modul(kennung)
+    if not hasattr(m, "umwandeln"):
+        print(f"{kennung} lädt direkt aus Hugging Face; Umwandeln gibt es nur für Modelle mit eigener Ablage.")
+        return 2
+    return m.umwandeln(original_loeschen)
 
 
 def main() -> None:
@@ -63,11 +80,16 @@ def main() -> None:
     g.add_argument("--laden", action="store_true", help="fehlende Dateien aus dem Netz laden, danach mit Prüfsummen prüfen")
     l = befehle.add_parser("pruefliste", help="Prüfliste aus dem gepinnten Stand von mflux neu schreiben (braucht Netz)")
     l.add_argument("modell", choices=sorted(MODELLE))
+    u = befehle.add_parser("umwandeln", help="quantisiert in die eigene Ablage speichern (Modelle mit eigener Ablage)")
+    u.add_argument("modell", choices=sorted(MODELLE))
+    u.add_argument("--original-loeschen", action="store_true", help="nach gelungenem Probeladen das Original aus dem Zwischenspeicher löschen")
     a = p.parse_args()
     if a.befehl == "gewichte":
         sys.exit(gewichte(a.modell, a.pruefsummen, a.laden))
     if a.befehl == "pruefliste":
         sys.exit(pruefliste(a.modell))
+    if a.befehl == "umwandeln":
+        sys.exit(umwandeln(a.modell, a.original_loeschen))
     dienst(a.befehl, a.port, a.probe)
 
 

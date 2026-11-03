@@ -5,14 +5,13 @@ name = "FLUX.2 klein 9B"
 beschreibung = "Schnelle Bilder aus Text in 4 Schritten und Bilder nach bis zu 4 Vorlagen (Stil, Bezug); Lizenz nur nicht-kommerziell"
 ordner = "~/Entwicklung/Werkzeuge/Bildwerk"
 befehl = [".venv/bin/python", "-m", "bildwerk", "flux2-klein", "--port", "$MASCHINENRAUM_PORT"]
-port = 8792
-pruefadresse = "http://127.0.0.1:8792/gesundheit"
+port = 8794
+pruefadresse = "http://127.0.0.1:8794/gesundheit"
 faehigkeiten = ["bild_erzeugen"]
-eignung = ["schnell"]
+eignung = []
 sprachen = ["en"]
-# Schätzung bis zur ersten Messung: in 8 Bit rund 18 GB Gewichte (Transformer 9 und Textkodierer 8 Mrd. Parameter),
-# dazu die Rechnung je Bild samt Vorlagen und das Laden, das die bf16-Gewichte (35 GB auf der Platte) liest und quantisiert
-speicher_gb = 24
+# gemessen am 03.11.2026 über die Leitstelle (docs/messungen/flux2-klein.json): Spitze 26,2 GB bei 1024x1024 mit Vorlage
+speicher_gb = 27
 startzeit_s = 300
 anhaltezeit_s = 30
 

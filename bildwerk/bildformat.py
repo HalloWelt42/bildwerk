@@ -62,6 +62,7 @@ class Modellangaben(BaseModel):
     kann_bearbeiten: bool = False
     bearbeiten_grund: str = Field(default="", description="warum das Modell nicht bearbeitet (Antwort 501)")
     vorlagen_max: int = Field(default=0, ge=0, description="Bildvorlagen je Bearbeitung (Stil, Bezug); 0: keine")
+    vorlagen_min: int = Field(default=0, ge=0, description="Bildvorlagen, die das Modell mindestens braucht; über 0: rechnet nur mit Vorlage")
     eignung: list[str] = Field(default_factory=list, description="Wörter der Leitstelle: schnell, gruendlich, ...")
     sprachen: list[str] = Field(default_factory=list, description="Sprachen der Beschreibung, die das Modell gut versteht (ISO 639-1)")
     parameter_mrd: float = Field(description="Parameter des Bildteils (Transformer) in Milliarden")

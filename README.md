@@ -22,7 +22,8 @@ Anwendungen  ->  Leitstelle  ->  Maschinenraum  ->  Bildwerk moss-image
 | Dienst | Port | Fähigkeit | Modell | Bearbeiten | Lizenz des Modells |
 |---|---|---|---|---|---|
 | `moss-image` | 8791 | bild_erzeugen | MOSS-Image-SFT (4,9 Mrd. Parameter, Textkodierer Qwen3.5-9B), Vorgabe 8 Bit | nein | Apache-2.0 |
-| `flux2-klein` | 8792 | bild_erzeugen | FLUX.2 klein 9B (9 Mrd. Parameter, Textkodierer Qwen3-8B), Vorgabe 8 Bit, 4 Schritte | ja, 1 bis 4 Vorlagen | FLUX Non-Commercial License |
+| `flux2-klein` | 8794 | bild_erzeugen | FLUX.2 klein 9B (9 Mrd. Parameter, Textkodierer Qwen3-8B), Vorgabe 8 Bit, 4 Schritte | ja, 1 bis 4 Vorlagen | FLUX Non-Commercial License |
+| `qwen-image-edit` | 8795 | bild_erzeugen | Qwen-Image-Edit-2511 (20 Mrd. Parameter, Textkodierer Qwen2.5-VL-7B), eigene 8-Bit-Ablage, 40 Schritte | nur mit Vorlage, 1 bis 3 | Apache-2.0 |
 
 Gerechnet wird mit [mflux](https://github.com/mflux-community/mflux) ganz in MLX auf der Grafik des Macs. Innerhalb
 eines Dienstes rechnet immer nur ein Auftrag zugleich; der Zwischenspeicher für Grafikpuffer ist begrenzt
@@ -36,7 +37,7 @@ Jeder Dienst, gleich welches Modell:
 | Aufruf | Bedeutung |
 |---|---|
 | `POST /v1/images/generations` | Bilder aus Text; Antwort `data[].b64_json` (PNG) |
-| `POST /v1/images/edits` | Bilder nach Vorlagen (Stil, Bezug): Felder wie bei der Erzeugung, dazu `images` (1 bis `vorlagen_max` Bilder als Base64, PNG, JPEG oder WebP, je höchstens 20 MB); kann das Modell es nicht, `501` mit Grund |
+| `POST /v1/images/edits` | Bilder nach Vorlagen (Stil, Bezug): Felder wie bei der Erzeugung, dazu `images` (`vorlagen_min` bis `vorlagen_max` Bilder als Base64, PNG, JPEG oder WebP, je höchstens 20 MB); kann das Modell es nicht, `501` mit Grund. Ein Modell mit `vorlagen_min` über 0 rechnet nur hier, `generations` lehnt es mit `400` ab |
 | `GET /v1/models` | das eine Modell des Dienstes mit Steckbrief |
 | `GET /gesundheit` | `200` bereit (oder Probemodus), sonst `503` mit `zustand` `laedt` oder `gestoert` |
 

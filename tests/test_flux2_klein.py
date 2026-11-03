@@ -97,7 +97,7 @@ def test_steckbrief_mit_vorlagen_und_lizenzhinweis():
     with TestClient(erstellen("flux2-klein", ScheinMotor(), Einstellungen())) as c:
         bereit(c)
         s = c.get("/v1/models").json()["data"][0]["steckbrief"]
-    assert s["kann_bearbeiten"] is True and s["vorlagen_max"] == 4 and s["eignung"] == ["schnell"]
+    assert s["kann_bearbeiten"] is True and s["vorlagen_max"] == 4 and s["eignung"] == []   # "schnell" erst nach neuer Messung
     assert s["lizenz"] == "FLUX Non-Commercial License" and s["lizenz_hinweis"] == "Nur nicht-kommerzielle Nutzung der Bilder."
     assert s["schritte"] == {"vorgabe": 4, "kleinste": 1, "groesste": 50} and s["guidance"] == 1.0
     assert s["quelle"]["repo"] == "black-forest-labs/FLUX.2-klein-9B"
@@ -127,14 +127,33 @@ def test_motor_gibt_vorlagen_als_dateien_und_raeumt_auf():
     bilder = motor.erzeugen(Bildauftrag(beschreibung="Katze", breite=512, hoehe=512, seeds=[1, 2], schritte=4, vorlagen=roh), threading.Event())
     assert [b.size for b in bilder] == [(512, 512)] * 2 and len(gesehen) == 2
     assert not any(p.exists() for p in gesehen[0]) and motor.m.prompt_cache == {}
+    # ohne Vorlage rechnet die Textklasse über denselben Gewichten (Flux2KleinEdit verlangt in mflux 0.24.0 ein Bild)
+    text = []
+    motor.text = type("Text", (), {"generate_image": lambda self, **kw: text.append(kw) or Ergebnis((kw["width"], kw["height"]))})()
     motor.erzeugen(Bildauftrag(beschreibung="Katze", breite=512, hoehe=512, seeds=[3], schritte=4), threading.Event())
-    assert gesehen[-1] is None
+    assert len(gesehen) == 2 and text[0]["seed"] == 3 and "image_paths" not in text[0]
 
 
 def test_motor_laedt_nie_ohne_vollstaendige_gewichte(tmp_path, monkeypatch):
     monkeypatch.setattr(flux2_klein, "ablage", lambda: tmp_path)
     with pytest.raises(GewichteFehlen, match="bildwerk gewichte flux2-klein --laden"):
         flux2_klein.Motor(Einstellungen()).laden()
+
+
+def test_textmodell_teilt_die_gewichte():
+    """Die Textklasse sieht dieselben Teilmodule (keine Kopie der Gewichte) und dieselben Angaben wie das Bearbeitungsmodell."""
+    import mlx.core as mx
+    import mlx.nn as nn
+    from mflux.models.flux2.variants.edit.flux2_klein_edit import Flux2KleinEdit
+    from mflux.models.flux2.variants.txt2img.flux2_klein import Flux2Klein
+
+    edit = Flux2KleinEdit.__new__(Flux2KleinEdit)
+    nn.Module.__init__(edit)
+    edit.transformer = nn.Linear(2, 2)
+    edit.tokenizers = {"qwen3": "schein"}
+    text = flux2_klein.textmodell(edit)
+    assert isinstance(text, Flux2Klein) and text.transformer is edit.transformer and text.tokenizers is edit.tokenizers
+    assert mx.array_equal(text.transformer.weight, edit.transformer.weight)
 
 
 def test_angaben_wie_mflux():

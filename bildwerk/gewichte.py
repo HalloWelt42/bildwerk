@@ -8,6 +8,10 @@ Die Gewichte liegen im Zwischenspeicher von Hugging Face (`HF_HUB_CACHE`), den d
 Modellablage setzt (`~/Maschinenraum/modelle/huggingface`). Ein Dienst lädt nie selbst aus dem Netz: fehlt etwas,
 meldet er es und bleibt gestört. Geladen wird nur von Hand mit `bildwerk gewichte <modell> --laden`.
 
+Ein Modell kann stattdessen aus einer eigenen, schon quantisierten Ablage laden (mit mflux gespeichert, etwa
+`bild/mflux/<modell>-8bit` in der Modellablage, Feld `lokal`): dann prüft die Liste genau diese Dateien, und das Original
+aus Hugging Face darf nach dem Umwandeln weg. Die Quelle (Repo und Revision) bleibt in der Liste als Herkunft.
+
 Heruntergeladene Dateien sind fremde Daten: geladen werden nur Gewichte, Konfiguration und Tokenizer, nie Code des
 Modell-Repos (dort liegende Python-Dateien passen auf kein Muster).
 """
@@ -33,6 +37,7 @@ class Pruefliste(BaseModel):
     repo: str
     revision: str
     lizenz: str
+    lokal: str | None = Field(default=None, description="eigene Ablage relativ zur Modellablage (mit mflux gespeichert, schon quantisiert)")
     dateien: list[Datei]
 
     @classmethod
@@ -47,7 +52,10 @@ class Pruefliste(BaseModel):
         return sum(d.groesse for d in self.dateien)
 
     def ordner(self, ablage: Path) -> Path:
-        """Schnappschuss dieser Revision im Zwischenspeicher von Hugging Face."""
+        """Schnappschuss dieser Revision im Zwischenspeicher von Hugging Face, bei einer eigenen Ablage deren Ordner in der
+        Modellablage (der Zwischenspeicher liegt dort als Unterordner)."""
+        if self.lokal:
+            return ablage.parent / self.lokal
         return ablage / f"models--{self.repo.replace('/', '--')}" / "snapshots" / self.revision
 
 
@@ -114,6 +122,13 @@ def laden(liste: Pruefliste, wo: Path) -> Path:
     from huggingface_hub import snapshot_download
     return Path(snapshot_download(repo_id=liste.repo, revision=liste.revision, allow_patterns=[d.pfad for d in liste.dateien],
                                   cache_dir=wo, max_workers=4))
+
+
+def aus_ordner(ordner: Path, quelle: Pruefliste, lokal: str) -> Pruefliste:
+    """Prüfliste einer eigenen Ablage: jede Datei darin mit Größe und Prüfsumme, Herkunft aus der Quelle."""
+    dateien = [Datei(pfad=str(p.relative_to(ordner)), groesse=p.stat().st_size, sha256=_sha256(p))
+               for p in sorted(ordner.rglob("*")) if p.is_file()]
+    return Pruefliste(repo=quelle.repo, revision=quelle.revision, lizenz=quelle.lizenz, lokal=lokal, dateien=dateien)
 
 
 def erstellen(repo: str, revision: str, muster: list[str], lizenz: str) -> Pruefliste:

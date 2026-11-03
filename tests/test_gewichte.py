@@ -54,7 +54,7 @@ def test_pruefliste_passt_zu_mflux(kennung: str):
     """Repo, Revision und Dateien der Prüfliste sind genau das, was der gepinnte Stand von mflux lädt; nach einem neuen
     Pin schlägt das fehl, bis `bildwerk pruefliste <modell>` die Liste erneuert hat."""
     m = modul(kennung)
-    liste = Pruefliste.lesen(m.PRUEFLISTE)
+    liste = Pruefliste.lesen(getattr(m, "PRUEFLISTE_QUELLE", m.PRUEFLISTE))     # bei eigener Ablage: die Quelle
     repo, revision, muster = m.mflux_herkunft()
     assert (liste.repo, liste.revision, liste.lizenz) == (repo, revision, m.ANGABEN.lizenz)
     pfade = [d.pfad for d in liste.dateien]

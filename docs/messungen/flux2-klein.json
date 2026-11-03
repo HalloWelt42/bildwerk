@@ -1,0 +1,61 @@
+{
+  "modell": "flux2-klein",
+  "dienst": "bildwerk-flux2-klein",
+  "gemessen_am": "2026-11-03T21:51:03+00:00",
+  "groesse": "1024x1024",
+  "schritte": 4,
+  "laden_und_warten_s": 4.2,
+  "dauer_ohne_vorlage_s": 99.47,
+  "dauer_mit_vorlage_s": 116.85,
+  "speicher_spitze_gb": 26.18,
+  "laeufe": [
+    {
+      "seed": 100,
+      "vorlage": false,
+      "groesse": "1024x1024",
+      "schritte": 4,
+      "dauer_s": 110.9,
+      "bis_antwort_s": 115.11
+    },
+    {
+      "seed": 101,
+      "vorlage": false,
+      "groesse": "1024x1024",
+      "schritte": 4,
+      "dauer_s": 96.54,
+      "bis_antwort_s": 96.62
+    },
+    {
+      "seed": 102,
+      "vorlage": false,
+      "groesse": "1024x1024",
+      "schritte": 4,
+      "dauer_s": 90.96,
+      "bis_antwort_s": 91.03
+    },
+    {
+      "seed": 200,
+      "vorlage": true,
+      "groesse": "1024x1024",
+      "schritte": 4,
+      "dauer_s": 115.03,
+      "bis_antwort_s": 115.08
+    },
+    {
+      "seed": 201,
+      "vorlage": true,
+      "groesse": "1024x1024",
+      "schritte": 4,
+      "dauer_s": 115.56,
+      "bis_antwort_s": 115.61
+    },
+    {
+      "seed": 202,
+      "vorlage": true,
+      "groesse": "1024x1024",
+      "schritte": 4,
+      "dauer_s": 119.96,
+      "bis_antwort_s": 120.03
+    }
+  ]
+}

@@ -3,14 +3,14 @@ zweck: "Die Bilddienste des Hauses, je Bildmodell ein eigener Prozess mit dersel
 geraet: [mac]
 abhaengigkeiten: [maschinenraum]
 daten:
-  - "Mac: die Gewichte in der Modellablage `~/Maschinenraum/modelle/huggingface` (MOSS-Image-SFT, 27,2 GB; FLUX.2 klein 9B, 34,7 GB)"
+  - "Mac: die Gewichte in der Modellablage `~/Maschinenraum/modelle/huggingface` (MOSS-Image-SFT, 27,2 GB; FLUX.2 klein 9B, 34,7 GB) und die eigene 8-Bit-Ablage von Qwen-Image-Edit-2511 in `~/Maschinenraum/modelle/bild/mflux/qwen-image-edit-2511-8bit`"
   - "Mac: Dienstdateien `~/Maschinenraum/dienste/bildwerk-*.toml` (je Modell eine)"
 sicherung:
   - "nichts Eigenes zu sichern: die Dienstdateien schreibt die Installation neu, die Gewichte lassen sich neu laden; die Modellablage gehört zur Sicherung des Macs (siehe Grundlage Mac)"
   - "das Repo liegt bisher nur auf dem Mac (keine entfernte Ablage): der Ordner gehört zur Sicherung des Macs"
 schluessel_orte: []
 einrichten: einrichten.sh
-stand: 8e3a42d
+stand: 74c0641
 ---
 
 # Bildwerk
@@ -26,6 +26,7 @@ verlangt; sie entscheidet über Laden, Entladen und Vorrang, und Apps (auch der 
 |---|---|---|
 | moss-image | bild_erzeugen | MOSS-Image-SFT (Apache-2.0), 8 Bit, gerechnet mit mflux (MLX); Bilder aus Text, kein Bearbeiten |
 | flux2-klein | bild_erzeugen | FLUX.2 klein 9B (FLUX Non-Commercial License: Bilder nur nicht-kommerziell nutzen), 8 Bit, mflux (MLX); schnell in 4 Schritten, Bilder aus Text und nach bis zu 4 Vorlagen (Stil, Bezug) |
+| qwen-image-edit | bild_erzeugen | Qwen-Image-Edit-2511 (Apache-2.0, frei nutzbar), eigene 8-Bit-Ablage, mflux (MLX); bearbeitet nach Anweisung und zeichnet nach 1 bis 3 Vorlagen neu, rechnet nur mit Vorlage |
 
 Sichtbar heißt der Dienst nach seinem Modell ("MOSS-Image", `name` der Dienstdatei); Maschinenraum, Leitstelle und
 Apps setzen die Aufgabe klein dahinter ("MOSS-Image · Bilderzeugung"). Die Kennung `bildwerk-moss-image` bleibt.
@@ -59,8 +60,8 @@ cd {{ordner}} && ./einrichten.sh
 dem gepinnten Commit, dann je Modell eine Datei `~/Maschinenraum/dienste/bildwerk-<modell>.toml` aus `deploy/`, aber nur,
 wenn es sie noch nicht gibt (Änderungen von Hand bleiben). Gestartet und geladen wird nichts.
 
-Probe: `ls ~/Maschinenraum/dienste/bildwerk-*.toml` nennt `bildwerk-moss-image.toml` und `bildwerk-flux2-klein.toml`,
-und der Maschinenraum zeigt beide Dienste unter Dienste als aus.
+Probe: `ls ~/Maschinenraum/dienste/bildwerk-*.toml` nennt `bildwerk-moss-image.toml`, `bildwerk-flux2-klein.toml` und
+`bildwerk-qwen-image-edit.toml`, und der Maschinenraum zeigt die Dienste unter Dienste als aus.
 
 ### 2. Gewichte
 
@@ -70,8 +71,15 @@ Konfiguration und Tokenizer, nie Code des Modell-Repos), je Modell:
 dessen Repo verlangt einmal die Annahme der Lizenz bei Hugging Face). Die Dienstdatei sperrt
 danach das Netz (`HF_HUB_OFFLINE=1`); der Dienst lädt nie selbst.
 
+Qwen-Image-Edit-2511 läuft aus einer eigenen, schon quantisierten Ablage: einmal das Original laden (57,7 GB), dann
+umwandeln und das Original löschen, alles mit derselben Umgebung:
+`HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte qwen-image-edit --laden`, danach
+`HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk umwandeln qwen-image-edit --original-loeschen`.
+Das Umwandeln lädt das Modell einmal in bfloat16 (rund 58 GB Speicher); vorher große Sprachmodelle über die Leitstelle
+entladen. Aus der Sicherung liegt die 8-Bit-Ablage schon in der Modellablage.
+
 Probe: `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte moss-image --pruefsummen` (ebenso
-`flux2-klein`) meldet "vollständig" und "Prüfsummen stimmen".
+`flux2-klein` und `qwen-image-edit`) meldet "vollständig" und "Prüfsummen stimmen".
 
 ### 3. Starten über die Leitstelle
 

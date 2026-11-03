@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 # Größter Startwert: in JSON als ganze Zahl verlustfrei auch für Leser, die Zahlen als Gleitkomma lesen (wie die Leitstelle)
 SEED_GRENZE = 2**53
 ANZAHL_MAX = 4
+VORLAGE_BYTES_MAX = 20 * 1024 * 1024          # je Bildvorlage beim Bearbeiten
 GROESSE = re.compile(r"(\d{1,5})x(\d{1,5})")
 
 
@@ -60,11 +61,13 @@ class Modellangaben(BaseModel):
     faehigkeiten: list[str] = Field(default_factory=lambda: ["bild_erzeugen"])
     kann_bearbeiten: bool = False
     bearbeiten_grund: str = Field(default="", description="warum das Modell nicht bearbeitet (Antwort 501)")
+    vorlagen_max: int = Field(default=0, ge=0, description="Bildvorlagen je Bearbeitung (Stil, Bezug); 0: keine")
     eignung: list[str] = Field(default_factory=list, description="Wörter der Leitstelle: schnell, gruendlich, ...")
     sprachen: list[str] = Field(default_factory=list, description="Sprachen der Beschreibung, die das Modell gut versteht (ISO 639-1)")
     parameter_mrd: float = Field(description="Parameter des Bildteils (Transformer) in Milliarden")
     textkodierer: str
     lizenz: str
+    lizenz_hinweis: str = Field(default="", description="was die Lizenz für die Nutzung der Bilder heißt, in einem Satz")
     erschienen: date
     groessen: Groessenregel
     schritte: Schrittregel
@@ -137,6 +140,21 @@ class Bildanfrage(BaseModel):
         return wert
 
 
+class Bearbeitungsanfrage(Bildanfrage):
+    """`POST /v1/images/edits`: wie die Erzeugung, dazu die Bildvorlagen als Base64 (PNG, JPEG oder WebP), in der
+    Reihenfolge ihres Gewichts; das Modell hält sich an Stil und Inhalt der Vorlagen."""
+
+    images: list[str] = Field(min_length=1, max_length=ANZAHL_MAX)
+
+    @field_validator("images")
+    @classmethod
+    def _vorlagen(cls, werte: list[str]) -> list[str]:
+        for i, wert in enumerate(werte, start=1):
+            if len(wert) * 3 // 4 > VORLAGE_BYTES_MAX:
+                raise ValueError(f"Vorlage {i} ist größer als {VORLAGE_BYTES_MAX // (1024 * 1024)} MB.")
+        return werte
+
+
 class Bilddaten(BaseModel):
     b64_json: str
     revised_prompt: str | None = None
@@ -167,3 +185,4 @@ class Bildauftrag(BaseModel):
     hoehe: int
     seeds: list[int]
     schritte: int
+    vorlagen: list[bytes] = Field(default_factory=list, description="Bildvorlagen (Dateiinhalt), leer beim Erzeugen aus Text")

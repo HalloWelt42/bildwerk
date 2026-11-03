@@ -1,6 +1,6 @@
 """Verzeichnis der Bildmodelle: je Modell ein Modul mit PORT, ANGABEN, PRUEFLISTE, Motor und mflux_herkunft().
 
-Ein neues Modell (etwa FLUX.2 klein, Qwen-Image, Z-Image) ist ein weiteres Modul nach dem Muster von `moss_image`
+Ein neues Modell (etwa Qwen-Image, Z-Image) ist ein weiteres Modul nach dem Muster von `moss_image`
 und eine Zeile hier; Schnittstelle, Unterbau und Dienstdatei bleiben gleich.
 """
 
@@ -14,6 +14,7 @@ DIENST_PRAEFIX = "bildwerk-"
 
 MODELLE: dict[str, str] = {
     "moss-image": "bildwerk.modelle.moss_image",
+    "flux2-klein": "bildwerk.modelle.flux2_klein",
 }
 
 

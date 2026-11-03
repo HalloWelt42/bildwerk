@@ -1,16 +1,16 @@
 ---
-zweck: "Die Bilddienste des Hauses, je Bildmodell ein eigener Prozess mit derselben Schnittstelle: Bilder aus Text für die Apps, vermittelt von der Leitstelle."
+zweck: "Die Bilddienste des Hauses, je Bildmodell ein eigener Prozess mit derselben Schnittstelle: Bilder aus Text und nach Bildvorlagen für die Apps, vermittelt von der Leitstelle."
 geraet: [mac]
 abhaengigkeiten: [maschinenraum]
 daten:
-  - "Mac: die Gewichte in der Modellablage `~/Maschinenraum/modelle/huggingface` (MOSS-Image-SFT, 27,2 GB)"
+  - "Mac: die Gewichte in der Modellablage `~/Maschinenraum/modelle/huggingface` (MOSS-Image-SFT, 27,2 GB; FLUX.2 klein 9B, 34,7 GB)"
   - "Mac: Dienstdateien `~/Maschinenraum/dienste/bildwerk-*.toml` (je Modell eine)"
 sicherung:
   - "nichts Eigenes zu sichern: die Dienstdateien schreibt die Installation neu, die Gewichte lassen sich neu laden; die Modellablage gehört zur Sicherung des Macs (siehe Grundlage Mac)"
   - "das Repo liegt bisher nur auf dem Mac (keine entfernte Ablage): der Ordner gehört zur Sicherung des Macs"
 schluessel_orte: []
 einrichten: einrichten.sh
-stand: 60ff107
+stand: 8e3a42d
 ---
 
 # Bildwerk
@@ -25,6 +25,7 @@ verlangt; sie entscheidet über Laden, Entladen und Vorrang, und Apps (auch der 
 | Dienst | Fähigkeit | Modell |
 |---|---|---|
 | moss-image | bild_erzeugen | MOSS-Image-SFT (Apache-2.0), 8 Bit, gerechnet mit mflux (MLX); Bilder aus Text, kein Bearbeiten |
+| flux2-klein | bild_erzeugen | FLUX.2 klein 9B (FLUX Non-Commercial License: Bilder nur nicht-kommerziell nutzen), 8 Bit, mflux (MLX); schnell in 4 Schritten, Bilder aus Text und nach bis zu 4 Vorlagen (Stil, Bezug) |
 
 Sichtbar heißt der Dienst nach seinem Modell ("MOSS-Image", `name` der Dienstdatei); Maschinenraum, Leitstelle und
 Apps setzen die Aufgabe klein dahinter ("MOSS-Image · Bilderzeugung"). Die Kennung `bildwerk-moss-image` bleibt.
@@ -39,7 +40,8 @@ und Prüfadresse stehen unten im Block "Auf einen Blick" (aus den Dienstdateien)
 - [[Maschinenraum]]: die Installation trägt die Dienste in `~/Maschinenraum/dienste/` ein; gestartet werden sie dort
   auf Geheiß der [[Leitstelle]], nie von der Installation selbst.
 - Die Pakete kommen mit festen Ständen aus `einschraenkungen.txt`, mflux auf dem Commit aus `pyproject.toml`.
-- Die Gewichte je Modell in der Modellablage, vollständig nach der Prüfliste des Modells; für MOSS-Image rund 27 GB.
+- Die Gewichte je Modell in der Modellablage, vollständig nach der Prüfliste des Modells; für MOSS-Image rund 27 GB, für
+  FLUX.2 klein 9B rund 35 GB.
 
 ## Neu einrichten
 
@@ -57,18 +59,19 @@ cd {{ordner}} && ./einrichten.sh
 dem gepinnten Commit, dann je Modell eine Datei `~/Maschinenraum/dienste/bildwerk-<modell>.toml` aus `deploy/`, aber nur,
 wenn es sie noch nicht gibt (Änderungen von Hand bleiben). Gestartet und geladen wird nichts.
 
-Probe: `ls ~/Maschinenraum/dienste/bildwerk-*.toml` nennt `bildwerk-moss-image.toml`, und der Maschinenraum zeigt den
-Dienst unter Dienste als aus.
+Probe: `ls ~/Maschinenraum/dienste/bildwerk-*.toml` nennt `bildwerk-moss-image.toml` und `bildwerk-flux2-klein.toml`,
+und der Maschinenraum zeigt beide Dienste unter Dienste als aus.
 
 ### 2. Gewichte
 
-Aus der Sicherung liegen sie in der Modellablage. Frisch einmal laden (rund 27 GB aus dem Netz, nur Gewichte,
-Konfiguration und Tokenizer, nie Code des Modell-Repos):
-`HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte moss-image --laden`. Die Dienstdatei sperrt
+Aus der Sicherung liegen sie in der Modellablage. Frisch einmal laden (rund 27 GB je Modell aus dem Netz, nur Gewichte,
+Konfiguration und Tokenizer, nie Code des Modell-Repos), je Modell:
+`HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte moss-image --laden` (ebenso `flux2-klein`;
+dessen Repo verlangt einmal die Annahme der Lizenz bei Hugging Face). Die Dienstdatei sperrt
 danach das Netz (`HF_HUB_OFFLINE=1`); der Dienst lädt nie selbst.
 
-Probe: `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte moss-image --pruefsummen` meldet
-"vollständig" und "Prüfsummen stimmen".
+Probe: `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte moss-image --pruefsummen` (ebenso
+`flux2-klein`) meldet "vollständig" und "Prüfsummen stimmen".
 
 ### 3. Starten über die Leitstelle
 
@@ -93,8 +96,8 @@ damit nur über die Sicherung des Macs wiederherstellbar.
   brach ab; Schritt 2.
 - Der Dienst bleibt bei `laedt`: das Laden liest rund 27 GB und quantisiert auf 8 Bit; das dauert. Endet er nach der
   Startzeit der Dienstdatei, steht der Grund im Protokoll des Dienstes im Maschinenraum.
-- Antwort `400`: Größe oder Schritte passen nicht zum Modell (Grenzen im Steckbrief unter `/v1/models`); `501` bei
-  Bearbeiten: das Modell kann es nicht.
-- Speicher knapp: der Dienst braucht in 8 Bit rund 24 GB (Schätzung bis zur ersten Messung); weniger mit
+- Antwort `400`: Größe, Schritte oder Vorlagen passen nicht zum Modell (Grenzen im Steckbrief unter `/v1/models`); `501`
+  bei Bearbeiten: das Modell kann es nicht (MOSS-Image; Vorlagen nimmt FLUX.2 klein).
+- Speicher knapp: jeder Dienst braucht in 8 Bit rund 24 GB (Anmeldung in der Dienstdatei); weniger mit
   `BILDWERK_QUANTISIERUNG = "4bit"` unter `[umgebung]` der Dienstdatei. Die Leitstelle hält Dienste an, die sie nicht
   braucht.

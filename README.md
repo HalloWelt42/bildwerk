@@ -22,6 +22,7 @@ Anwendungen  ->  Leitstelle  ->  Maschinenraum  ->  Bildwerk moss-image
 | Dienst | Port | Fähigkeit | Modell | Bearbeiten | Lizenz des Modells |
 |---|---|---|---|---|---|
 | `moss-image` | 8791 | bild_erzeugen | MOSS-Image-SFT (4,9 Mrd. Parameter, Textkodierer Qwen3.5-9B), Vorgabe 8 Bit | nein | Apache-2.0 |
+| `flux2-klein` | 8792 | bild_erzeugen | FLUX.2 klein 9B (9 Mrd. Parameter, Textkodierer Qwen3-8B), Vorgabe 8 Bit, 4 Schritte | ja, 1 bis 4 Vorlagen | FLUX Non-Commercial License |
 
 Gerechnet wird mit [mflux](https://github.com/mflux-community/mflux) ganz in MLX auf der Grafik des Macs. Innerhalb
 eines Dienstes rechnet immer nur ein Auftrag zugleich; der Zwischenspeicher für Grafikpuffer ist begrenzt
@@ -35,7 +36,7 @@ Jeder Dienst, gleich welches Modell:
 | Aufruf | Bedeutung |
 |---|---|
 | `POST /v1/images/generations` | Bilder aus Text; Antwort `data[].b64_json` (PNG) |
-| `POST /v1/images/edits` | Bilder bearbeiten; kann das Modell es nicht, `501` mit Grund |
+| `POST /v1/images/edits` | Bilder nach Vorlagen (Stil, Bezug): Felder wie bei der Erzeugung, dazu `images` (1 bis `vorlagen_max` Bilder als Base64, PNG, JPEG oder WebP, je höchstens 20 MB); kann das Modell es nicht, `501` mit Grund |
 | `GET /v1/models` | das eine Modell des Dienstes mit Steckbrief |
 | `GET /gesundheit` | `200` bereit (oder Probemodus), sonst `503` mit `zustand` `laedt` oder `gestoert` |
 
@@ -61,14 +62,19 @@ Gleicher Startwert, gleiche Beschreibung, Größe und Schritte ergeben beim selb
 die Rechenzeit im Dienst ohne das Warten auf einen freien Platz. Fehler: `400` (Größe oder Schritte passen nicht zum
 Modell), `409` (anderes Modell verlangt), `422` (Form der Anfrage), `501` (Bearbeiten), `503` (Modell nicht bereit).
 
-Der Steckbrief unter `GET /v1/models` (`data[0].steckbrief`) nennt Zweck, Fähigkeiten, `kann_bearbeiten`, Eignung,
-Sprachen der Beschreibung, Parameter, Textkodierer, Lizenz, Größenregel (Raster, Kanten, Fläche, Vorgabe, empfohlene
+Der Steckbrief unter `GET /v1/models` (`data[0].steckbrief`) nennt Zweck, Fähigkeiten, `kann_bearbeiten` mit
+`vorlagen_max`, Eignung, Sprachen der Beschreibung, Parameter, Textkodierer, Lizenz mit `lizenz_hinweis` (was sie für die
+Bilder heißt), Größenregel (Raster, Kanten, Fläche, Vorgabe, empfohlene
 Größen), Schrittregel (Vorgabe, kleinste, größte), Führung, längste Beschreibung in Token, Quelle (Repo und Revision
 der Gewichte), Quantisierung, Rechenwerk (mflux mit Fassung und Commit) und Zustand.
 
 MOSS-Image: Größen mit Kanten durch 16, je 256 bis 2048, Fläche 512x512 bis 2048x2048, am besten 1 bis 2 Megapixel;
 Schritte 1 bis 218, Vorgabe 50; Führung 3; Beschreibungen bis 4096 Token, auch als Schlagwortfolge oder als Anordnung in
 JSON; Schrift im Bild auf Englisch und Chinesisch.
+
+FLUX.2 klein 9B: dieselben Größen, Schritte 1 bis 50, Vorgabe 4 (destilliert), Führung 1; Beschreibungen bis 512 Token;
+bis zu 4 Vorlagen über `POST /v1/images/edits`. Die Lizenz (FLUX Non-Commercial License) erlaubt die Bilder nur für
+nicht-kommerzielle Nutzung; der Steckbrief sagt das in `lizenz_hinweis`.
 
 ## Gewichte
 

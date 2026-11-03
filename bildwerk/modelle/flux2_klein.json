@@ -1,0 +1,107 @@
+{
+  "repo": "black-forest-labs/FLUX.2-klein-9B",
+  "revision": "92196c8e11f7b6cf2b7493e037d8c5345c559216",
+  "lizenz": "FLUX Non-Commercial License",
+  "dateien": [
+    {
+      "pfad": "text_encoder/config.json",
+      "groesse": 1538,
+      "git_sha1": "dd0d909c489845c5042d866f0d9f258784a90304"
+    },
+    {
+      "pfad": "text_encoder/generation_config.json",
+      "groesse": 214,
+      "git_sha1": "f5af93d0c7764fa38e3b1cd3aaba1b6307246d3b"
+    },
+    {
+      "pfad": "text_encoder/model-00001-of-00004.safetensors",
+      "groesse": 4902257696,
+      "sha256": "c0dc64934ae0f730ddc80d99af44968d01a89e8454df07d762096ea1356446bc"
+    },
+    {
+      "pfad": "text_encoder/model-00002-of-00004.safetensors",
+      "groesse": 4915960368,
+      "sha256": "d58533b468c31caa0222540a8aefddea1d74dc6e1fee928da8556d3d85729d6e"
+    },
+    {
+      "pfad": "text_encoder/model-00003-of-00004.safetensors",
+      "groesse": 4983068496,
+      "sha256": "74927fec432e050365bf757bb30348f560a44394efac89f492680b7c910b64fd"
+    },
+    {
+      "pfad": "text_encoder/model-00004-of-00004.safetensors",
+      "groesse": 1580230264,
+      "sha256": "cb73f466fade5716702bda38d4e3b321c9358c39889e46fb9d613fb038bfcb2f"
+    },
+    {
+      "pfad": "text_encoder/model.safetensors.index.json",
+      "groesse": 32914,
+      "git_sha1": "991332e2a7dada9479948259f715fe1f6c69db54"
+    },
+    {
+      "pfad": "tokenizer/added_tokens.json",
+      "groesse": 707,
+      "git_sha1": "b54f9135e44c1e81047e8d05cb027af8bc039eed"
+    },
+    {
+      "pfad": "tokenizer/chat_template.jinja",
+      "groesse": 4168,
+      "git_sha1": "01be9b307daa2d425f7c168c9fb145a286e0afb4"
+    },
+    {
+      "pfad": "tokenizer/merges.txt",
+      "groesse": 1671853,
+      "git_sha1": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7"
+    },
+    {
+      "pfad": "tokenizer/special_tokens_map.json",
+      "groesse": 613,
+      "git_sha1": "ac23c0aaa2434523c494330aeb79c58395378103"
+    },
+    {
+      "pfad": "tokenizer/tokenizer.json",
+      "groesse": 11422654,
+      "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+    },
+    {
+      "pfad": "tokenizer/tokenizer_config.json",
+      "groesse": 5404,
+      "git_sha1": "ddaf69808214a44fdd26d3785b66c1367c78277a"
+    },
+    {
+      "pfad": "tokenizer/vocab.json",
+      "groesse": 2776833,
+      "git_sha1": "4783fe10ac3adce15ac8f358ef5462739852c569"
+    },
+    {
+      "pfad": "transformer/config.json",
+      "groesse": 542,
+      "git_sha1": "028532655afc211b01866fc5059b61a53af736be"
+    },
+    {
+      "pfad": "transformer/diffusion_pytorch_model-00001-of-00002.safetensors",
+      "groesse": 9801069272,
+      "sha256": "cb942a7072865a1d06e47a3361f9ba8746e68ad207c8499083bcb735869f5102"
+    },
+    {
+      "pfad": "transformer/diffusion_pytorch_model-00002-of-00002.safetensors",
+      "groesse": 8356121608,
+      "sha256": "ca568a31d19c03ddbcfd8b2d4ec7dbd16dcefbaa50b7aef1b8ceefd6e6eb0970"
+    },
+    {
+      "pfad": "transformer/diffusion_pytorch_model.safetensors.index.json",
+      "groesse": 24875,
+      "git_sha1": "53b7e151560e69b6b242208b98da4eb25b0111c6"
+    },
+    {
+      "pfad": "vae/config.json",
+      "groesse": 821,
+      "git_sha1": "c3f38eb4c188a96a462519159356bd0fcc28cd14"
+    },
+    {
+      "pfad": "vae/diffusion_pytorch_model.safetensors",
+      "groesse": 168120878,
+      "sha256": "ca70d2202afe6415bdbcb8793ba8cd99fd159cfe6192381504d6c4d3036e0f04"
+    }
+  ]
+}

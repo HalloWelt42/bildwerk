@@ -3,7 +3,8 @@
     bildwerk <modell> [--port N] [--probe]               Dienst des Modells (je Prozess genau ein Modell)
     bildwerk gewichte <modell> [--pruefsummen] [--laden] Gewichte in der Modellablage prüfen, mit --laden fehlende laden
     bildwerk pruefliste <modell>                         Prüfliste aus dem gepinnten Stand von mflux neu schreiben (Netz)
-    bildwerk umwandeln <modell> [--original-loeschen]    quantisiert in die eigene Ablage speichern (Modelle mit `lokal`)
+    bildwerk umwandeln <modell> [--original-loeschen]    quantisiert in die eigene Ablage speichern (Modelle mit `lokal`);
+                                                          das Original erst nach einer Messung, und nur in den Papierkorb
 
 Modelle mit eigener, quantisierter Ablage haben zwei Listen: PRUEFLISTE_QUELLE (was aus Hugging Face geladen wird) und
 PRUEFLISTE (die eigene Ablage, aus der der Dienst lädt).
@@ -82,7 +83,7 @@ def main() -> None:
     l.add_argument("modell", choices=sorted(MODELLE))
     u = befehle.add_parser("umwandeln", help="quantisiert in die eigene Ablage speichern (Modelle mit eigener Ablage)")
     u.add_argument("modell", choices=sorted(MODELLE))
-    u.add_argument("--original-loeschen", action="store_true", help="nach gelungenem Probeladen das Original aus dem Zwischenspeicher löschen")
+    u.add_argument("--original-loeschen", action="store_true", help="das Original in den Papierkorb legen, wenn eine Messung belegt, dass die eigene Ablage rechnet")
     a = p.parse_args()
     if a.befehl == "gewichte":
         sys.exit(gewichte(a.modell, a.pruefsummen, a.laden))

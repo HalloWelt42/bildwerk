@@ -7,7 +7,8 @@ Bearbeitungsmodell: `/v1/images/generations` lehnt ab, `/v1/images/edits` brauch
 
 Bildteil: MMDiT mit 20 Milliarden Parametern, Textkodierer Qwen2.5-VL 7B (liest auch die Vorlagen). Der Dienst lädt
 aus einer eigenen, schon auf 8 Bit gespeicherten Ablage (`bild/mflux/qwen-image-edit-2511-8bit` in der Modellablage,
-`bildwerk umwandeln qwen-image-edit`); das Original aus Hugging Face (rund 58 GB) wird danach gelöscht. Den Textkodierer
+`bildwerk umwandeln qwen-image-edit`); das Original aus Hugging Face (rund 58 GB) kommt erst in den Papierkorb, wenn eine
+Messung über die Leitstelle belegt, dass die eigene Ablage lädt und rechnet (`docs/messungen/qwen-image-edit.json`). Den Textkodierer
 lässt mflux auch dort in bfloat16 (rund 15,5 GB mit dem Bildteil des Kodierers).
 
 Lizenz: Apache-2.0, die Bilder sind frei nutzbar.
@@ -76,9 +77,36 @@ def mflux_herkunft() -> tuple[str, str, list[str]]:
     return repo, ModelRevisions.get(repo), QwenWeightDefinition.get_download_patterns()
 
 
+MESSUNG = Path(__file__).resolve().parents[2] / "docs" / "messungen" / "qwen-image-edit.json"
+
+
+def gerechnet() -> bool:
+    """Belegt eine Messung über die Leitstelle, dass die eigene Ablage rechnet (mindestens ein Lauf mit Bild)?"""
+    import json
+    try:
+        laeufe = json.loads(MESSUNG.read_text(encoding="utf-8")).get("laeufe", [])
+    except (OSError, ValueError):
+        return False
+    return any(x.get("vorlage") and x.get("dauer_s", 0) > 0 for x in laeufe)
+
+
+def original_in_papierkorb(wo: Path, repo: str) -> Path:
+    """Das Original aus dem Zwischenspeicher in den Papierkorb des Benutzers legen (nicht endgültig löschen)."""
+    original = wo / f"models--{repo.replace('/', '--')}"
+    papierkorb = Path.home() / ".Trash"
+    ziel = papierkorb / original.name
+    zaehler = 2
+    while ziel.exists():
+        ziel = papierkorb / f"{original.name} {zaehler}"
+        zaehler += 1
+    shutil.move(str(original), str(ziel))
+    return ziel
+
+
 def umwandeln(original_loeschen: bool) -> int:
     """Aus dem Original im Zwischenspeicher auf 8 Bit in die eigene Ablage speichern, Prüfliste schreiben, Probeladen aus
-    der eigenen Ablage; erst danach auf Wunsch das Original löschen. Rechnet kein Bild."""
+    der eigenen Ablage. Mit `original_loeschen` kommt das Original nur in den Papierkorb, wenn eine Messung belegt, dass
+    die eigene Ablage rechnet; sonst sagt der Befehl, was fehlt. Rechnet selbst kein Bild."""
     import gc
 
     from mflux.models.common.config import ModelConfig
@@ -106,9 +134,10 @@ def umwandeln(original_loeschen: bool) -> int:
     gc.collect()
     print("Probeladen gelungen")
     if original_loeschen:
-        original = wo / f"models--{quelle.repo.replace('/', '--')}"
-        shutil.rmtree(original)
-        print(f"Original gelöscht: {original}")
+        if not gerechnet():
+            print(f"Original bleibt: erst über die Leitstelle messen (tools/messen.py qwen-image-edit), dann erneut mit --original-loeschen")
+            return 3
+        print(f"Original im Papierkorb: {original_in_papierkorb(wo, quelle.repo)}")
     return 0
 
 

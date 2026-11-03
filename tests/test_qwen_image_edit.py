@@ -120,3 +120,21 @@ def test_angaben_wie_mflux():
     c = ModelConfig.qwen_image_edit_2511()
     a = qwen_image_edit.ANGABEN
     assert a.meint(c.model_name) and qwen_image_edit.mflux_herkunft()[0] == "Qwen/Qwen-Image-Edit-2511"
+
+
+def test_original_erst_nach_messung_und_nur_in_den_papierkorb(tmp_path, monkeypatch):
+    import json
+    monkeypatch.setattr(qwen_image_edit, "MESSUNG", tmp_path / "messung.json")
+    assert not qwen_image_edit.gerechnet()
+    (tmp_path / "messung.json").write_text(json.dumps({"laeufe": [{"vorlage": True, "dauer_s": 0}]}))
+    assert not qwen_image_edit.gerechnet()                               # ohne gerechnetes Bild kein Beleg
+    (tmp_path / "messung.json").write_text(json.dumps({"laeufe": [{"vorlage": True, "dauer_s": 41.2}]}))
+    assert qwen_image_edit.gerechnet()
+    zuhause = tmp_path / "zuhause"
+    (zuhause / ".Trash").mkdir(parents=True)
+    monkeypatch.setattr(qwen_image_edit.Path, "home", classmethod(lambda cls: zuhause))
+    hf = tmp_path / "huggingface"
+    (hf / "models--Qwen--Qwen-Image-Edit-2511" / "blobs").mkdir(parents=True)
+    ziel = qwen_image_edit.original_in_papierkorb(hf, "Qwen/Qwen-Image-Edit-2511")
+    assert ziel == zuhause / ".Trash" / "models--Qwen--Qwen-Image-Edit-2511" and (ziel / "blobs").is_dir()
+    assert not (hf / "models--Qwen--Qwen-Image-Edit-2511").exists()

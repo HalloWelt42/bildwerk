@@ -10,7 +10,7 @@ sicherung:
   - "das Repo liegt bisher nur auf dem Mac (keine entfernte Ablage): der Ordner gehört zur Sicherung des Macs"
 schluessel_orte: []
 einrichten: einrichten.sh
-stand: 74c0641
+stand: 2ebd1f2
 ---
 
 # Bildwerk
@@ -72,11 +72,13 @@ dessen Repo verlangt einmal die Annahme der Lizenz bei Hugging Face). Die Dienst
 danach das Netz (`HF_HUB_OFFLINE=1`); der Dienst lädt nie selbst.
 
 Qwen-Image-Edit-2511 läuft aus einer eigenen, schon quantisierten Ablage: einmal das Original laden (57,7 GB), dann
-umwandeln und das Original löschen, alles mit derselben Umgebung:
+umwandeln, alles mit derselben Umgebung:
 `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte qwen-image-edit --laden`, danach
-`HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk umwandeln qwen-image-edit --original-loeschen`.
-Das Umwandeln lädt das Modell einmal in bfloat16 (rund 58 GB Speicher); vorher große Sprachmodelle über die Leitstelle
-entladen. Aus der Sicherung liegt die 8-Bit-Ablage schon in der Modellablage.
+`HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk umwandeln qwen-image-edit`. Das Umwandeln lädt das
+Modell einmal in bfloat16 (rund 58 GB Speicher); vorher große Sprachmodelle über die Leitstelle entladen und danach
+genau so wieder laden. Erst wenn eine Messung über die Leitstelle (`tools/messen.py qwen-image-edit`) belegt, dass die
+eigene Ablage rechnet, legt derselbe Befehl mit `--original-loeschen` das Original in den Papierkorb (nicht endgültig).
+Aus der Sicherung liegt die 8-Bit-Ablage schon in der Modellablage.
 
 Probe: `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte moss-image --pruefsummen` (ebenso
 `flux2-klein` und `qwen-image-edit`) meldet "vollständig" und "Prüfsummen stimmen".

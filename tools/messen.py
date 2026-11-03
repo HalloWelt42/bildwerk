@@ -59,22 +59,29 @@ def main() -> int:
     p.add_argument("--vorlage", type=Path, help="Bild als Stilvorlage für die Läufe mit Vorlage")
     p.add_argument("--laeufe", type=int, default=3)
     p.add_argument("--groesse", default="1024x1024")
-    p.add_argument("--schritte", type=int, default=4)
+    p.add_argument("--schritte", type=int, help="Vorgabe: die des Modells")
     a = p.parse_args()
     adresse = os.environ.get("LEITSTELLE_ADRESSE")
     if not adresse:
         raise SystemExit("LEITSTELLE_ADRESSE setzen (Adresse der Leitstelle)")
     dienst = f"bildwerk-{a.modell}"
+    sys.path.insert(0, str(WURZEL))
+    from bildwerk.modelle import modul
+    angaben = modul(a.modell).ANGABEN
+    schritte = a.schritte or angaben.schritte.vorgabe
+    if angaben.vorlagen_min and not a.vorlage:
+        raise SystemExit(f"{angaben.name} rechnet nur mit Vorlage: --vorlage angeben")
     schluessel = a.schluessel_datei.expanduser().read_text().strip()
     vorlage = base64.b64encode(a.vorlage.read_bytes()).decode("ascii") if a.vorlage else None
     laeufe = []
     with httpx.Client(base_url=adresse, headers={"Authorization": f"Bearer {schluessel}"}, timeout=httpx.Timeout(900, connect=10)) as c:
-        for i in range(a.laeufe):
-            laeufe.append(lauf(c, dienst, 100 + i, None, a.groesse, a.schritte))
+        # ein reines Bearbeitungsmodell (vorlagen_min) rechnet nur mit Vorlage
+        for i in range(0 if angaben.vorlagen_min else a.laeufe):
+            laeufe.append(lauf(c, dienst, 100 + i, None, a.groesse, schritte))
             print(laeufe[-1], flush=True)
         if vorlage:
             for i in range(a.laeufe):
-                laeufe.append(lauf(c, dienst, 200 + i, vorlage, a.groesse, a.schritte))
+                laeufe.append(lauf(c, dienst, 200 + i, vorlage, a.groesse, schritte))
                 print(laeufe[-1], flush=True)
 
     def mittel(mit: bool) -> float | None:
@@ -82,7 +89,7 @@ def main() -> int:
         return round(statistics.mean(werte), 2) if werte else None
 
     ergebnis = {"modell": a.modell, "dienst": dienst, "gemessen_am": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                "groesse": a.groesse, "schritte": a.schritte,
+                "groesse": a.groesse, "schritte": schritte,
                 "laden_und_warten_s": round(laeufe[0]["bis_antwort_s"] - laeufe[0]["dauer_s"], 1),
                 "dauer_ohne_vorlage_s": mittel(False), "dauer_mit_vorlage_s": mittel(True),
                 "speicher_spitze_gb": spitze_gb(dienst), "laeufe": laeufe}

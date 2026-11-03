@@ -16,6 +16,7 @@ Lizenz: Apache-2.0, die Bilder sind frei nutzbar.
 
 from __future__ import annotations
 
+import os
 import shutil
 import tempfile
 import threading
@@ -90,16 +91,24 @@ def gerechnet() -> bool:
     return any(x.get("vorlage") and x.get("dauer_s", 0) > 0 for x in laeufe)
 
 
-def original_in_papierkorb(wo: Path, repo: str) -> Path:
-    """Das Original aus dem Zwischenspeicher in den Papierkorb des Benutzers legen (nicht endgültig löschen)."""
+def original_in_papierkorb(wo: Path, repo: str, papierkorb: Path | None = None) -> Path:
+    """Das Original in den Papierkorb legen, nicht endgültig löschen. Die großen Dateien liegen nicht im Ordner des Modells,
+    sondern in der gemeinsamen Ablage `blobs/` daneben (der Ordner des Modells hält nur Verweise); verschoben werden nur
+    Dateien, auf die kein anderes Modell verweist. Alles kommt in einen Ordner `<Modell> (Original)` im Papierkorb."""
     original = wo / f"models--{repo.replace('/', '--')}"
-    papierkorb = Path.home() / ".Trash"
-    ziel = papierkorb / original.name
+    eigene = {Path(os.path.realpath(v)) for v in original.rglob("*") if v.is_symlink()}
+    andere = {Path(os.path.realpath(v)) for m in wo.glob("models--*") if m != original for v in m.rglob("*") if v.is_symlink()}
+    papierkorb = papierkorb or Path.home() / ".Trash"
+    ziel = papierkorb / f"{original.name} (Original)"
     zaehler = 2
     while ziel.exists():
-        ziel = papierkorb / f"{original.name} {zaehler}"
+        ziel = papierkorb / f"{original.name} (Original) {zaehler}"
         zaehler += 1
-    shutil.move(str(original), str(ziel))
+    (ziel / "blobs").mkdir(parents=True)
+    for datei in sorted(eigene - andere):
+        if datei.is_file() and datei.is_relative_to(wo):
+            shutil.move(str(datei), str(ziel / "blobs" / datei.relative_to(wo).as_posix().replace("/", "_")))
+    shutil.move(str(original), str(ziel / original.name))
     return ziel
 
 

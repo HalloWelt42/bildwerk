@@ -130,11 +130,23 @@ def test_original_erst_nach_messung_und_nur_in_den_papierkorb(tmp_path, monkeypa
     assert not qwen_image_edit.gerechnet()                               # ohne gerechnetes Bild kein Beleg
     (tmp_path / "messung.json").write_text(json.dumps({"laeufe": [{"vorlage": True, "dauer_s": 41.2}]}))
     assert qwen_image_edit.gerechnet()
-    zuhause = tmp_path / "zuhause"
-    (zuhause / ".Trash").mkdir(parents=True)
-    monkeypatch.setattr(qwen_image_edit.Path, "home", classmethod(lambda cls: zuhause))
+    # die großen Dateien liegen in der gemeinsamen Ablage blobs/, der Ordner des Modells hält nur Verweise
     hf = tmp_path / "huggingface"
-    (hf / "models--Qwen--Qwen-Image-Edit-2511" / "blobs").mkdir(parents=True)
-    ziel = qwen_image_edit.original_in_papierkorb(hf, "Qwen/Qwen-Image-Edit-2511")
-    assert ziel == zuhause / ".Trash" / "models--Qwen--Qwen-Image-Edit-2511" and (ziel / "blobs").is_dir()
-    assert not (hf / "models--Qwen--Qwen-Image-Edit-2511").exists()
+    (hf / "blobs" / "aa").mkdir(parents=True)
+    (hf / "blobs" / "aa" / "nur-qwen").write_bytes(b"gewichte")
+    (hf / "blobs" / "aa" / "geteilt").write_bytes(b"tokenizer")
+    qwen = hf / "models--Qwen--Qwen-Image-Edit-2511" / "snapshots" / "6f3" / "transformer"
+    qwen.mkdir(parents=True)
+    (qwen / "a.safetensors").symlink_to(hf / "blobs" / "aa" / "nur-qwen")
+    (qwen / "b.json").symlink_to(hf / "blobs" / "aa" / "geteilt")
+    anderes = hf / "models--anders--modell" / "snapshots" / "1"
+    anderes.mkdir(parents=True)
+    (anderes / "b.json").symlink_to(hf / "blobs" / "aa" / "geteilt")
+    korb = tmp_path / "korb"
+    korb.mkdir()
+    ziel = qwen_image_edit.original_in_papierkorb(hf, "Qwen/Qwen-Image-Edit-2511", korb)
+    assert ziel == korb / "models--Qwen--Qwen-Image-Edit-2511 (Original)"
+    assert (ziel / "blobs" / "blobs_aa_nur-qwen").read_bytes() == b"gewichte" and (ziel / "models--Qwen--Qwen-Image-Edit-2511").is_dir()
+    assert not (hf / "blobs" / "aa" / "nur-qwen").exists() and not (hf / "models--Qwen--Qwen-Image-Edit-2511").exists()
+    assert (hf / "blobs" / "aa" / "geteilt").read_bytes() == b"tokenizer"         # vom anderen Modell mitbenutzt: bleibt
+    assert (anderes / "b.json").read_bytes() == b"tokenizer"

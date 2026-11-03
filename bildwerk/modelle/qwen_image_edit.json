@@ -39,6 +39,36 @@
       "git_sha1": "92b467639266f4aa72a9b5ab73dbdf5a1f936ee4"
     },
     {
+      "pfad": "tokenizer/added_tokens.json",
+      "groesse": 605,
+      "git_sha1": "482ced4679301bf287ebb310bdd1790eb4514232"
+    },
+    {
+      "pfad": "tokenizer/chat_template.jinja",
+      "groesse": 2427,
+      "git_sha1": "28028c056af412405debd878cdda0171e35fa5d1"
+    },
+    {
+      "pfad": "tokenizer/merges.txt",
+      "groesse": 1671853,
+      "git_sha1": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7"
+    },
+    {
+      "pfad": "tokenizer/special_tokens_map.json",
+      "groesse": 613,
+      "git_sha1": "ac23c0aaa2434523c494330aeb79c58395378103"
+    },
+    {
+      "pfad": "tokenizer/tokenizer_config.json",
+      "groesse": 4686,
+      "git_sha1": "eaed590d62aaf0ba31e284b66ddcb18222f066c2"
+    },
+    {
+      "pfad": "tokenizer/vocab.json",
+      "groesse": 3383407,
+      "git_sha1": "6bce3a0a3866c4791a74d83d78f6824c3af64ec3"
+    },
+    {
       "pfad": "transformer/config.json",
       "groesse": 362,
       "git_sha1": "199398df180d275eee9da066489f9bb6e2b97609"

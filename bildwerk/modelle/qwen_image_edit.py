@@ -69,13 +69,16 @@ ANGABEN = Modellangaben(
 
 
 def mflux_herkunft() -> tuple[str, str, list[str]]:
-    """Repo, Revision und Dateimuster, wie der gepinnte Stand von mflux sie für Qwen-Image-Edit-2511 verlangt."""
+    """Repo, Revision und Dateimuster (Gewichte und Tokenizer), wie der gepinnte Stand von mflux sie für Qwen-Image-Edit-2511
+    verlangt."""
     from mflux.models.common.config import ModelConfig
     from mflux.models.common.resolution.model_revisions import ModelRevisions
     from mflux.models.qwen.weights.qwen_weight_definition import QwenWeightDefinition
 
     repo = ModelConfig.qwen_image_edit_2511().model_name
-    return repo, ModelRevisions.get(repo), QwenWeightDefinition.get_download_patterns()
+    # die Gewichte und dazu der Tokenizer, den mflux über eigene Muster lädt (ohne ihn bricht das Laden ab)
+    muster = QwenWeightDefinition.get_download_patterns() + [m for t in QwenWeightDefinition.get_tokenizers() for m in t.download_patterns]
+    return repo, ModelRevisions.get(repo), muster
 
 
 MESSUNG = Path(__file__).resolve().parents[2] / "docs" / "messungen" / "qwen-image-edit.json"

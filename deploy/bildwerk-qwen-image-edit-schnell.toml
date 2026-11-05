@@ -1,0 +1,21 @@
+# Bildwerk: Qwen-Image-Edit-2511 schnell (Lightning, 8 Schritte, Stärke 1; ATL-21 des Ateliers). Je Prozess genau ein Modell; es lädt beim Start, laufen heißt geladen.
+# Der Dienst startet nie von selbst: Starten und Anhalten nur über den Maschinenraum, wenn die Leitstelle es verlangt.
+# installieren.sh legt diese Datei als ~/Maschinenraum/dienste/bildwerk-qwen-image-edit-schnell.toml an (ordner auf den Klon gesetzt).
+name = "Qwen-Image-Edit-2511 schnell"
+beschreibung = "Bilder nach Anweisung bearbeiten wie Qwen-Image-Edit-2511, mit Lightning in 8 Schritten (rund ein Zehntel der Zeit); Apache-2.0, frei nutzbar; nur mit Vorlage"
+ordner = "~/Entwicklung/Werkzeuge/Bildwerk"
+befehl = [".venv/bin/python", "-m", "bildwerk", "qwen-image-edit-schnell", "--port", "$MASCHINENRAUM_PORT"]
+port = 8796
+pruefadresse = "http://127.0.0.1:8796/gesundheit"
+faehigkeiten = ["bild_erzeugen"]
+eignung = ["schnell"]
+sprachen = ["en", "zh"]
+# Schätzung bis zur ersten Messung (wie das Grundmodell, das LoRA ist eingerechnet): Bildteil 20 Mrd. Parameter in 8 Bit rund 20 GB, Textkodierer mit Bildteil in
+# bfloat16 rund 15,5 GB (mflux), dazu die Rechnung je Bild samt Vorlagen
+speicher_gb = 44
+startzeit_s = 300
+anhaltezeit_s = 30
+
+[umgebung]
+HF_HUB_OFFLINE = "1"
+BILDWERK_QUANTISIERUNG = "8bit"

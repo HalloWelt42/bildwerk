@@ -180,8 +180,12 @@ class Motor:
         from mflux.models.common.config import ModelConfig
         from mflux.models.qwen.variants.edit.qwen_image_edit import QwenImageEdit
 
-        self.m = QwenImageEdit(model_path=stand.ordner, model_config=ModelConfig.qwen_image_edit_2511())
+        self.m = QwenImageEdit(model_path=stand.ordner, model_config=ModelConfig.qwen_image_edit_2511(), **self.zusatzgewichte())
         self.m.callbacks.register(self._wache)
+
+    def zusatzgewichte(self) -> dict[str, Any]:
+        """LoRA, die beim Laden eingerechnet werden (die schnelle Fassung); hier keine."""
+        return {}
 
     def erzeugen(self, auftrag: Bildauftrag, abbruch: threading.Event) -> list[Image.Image]:
         if not auftrag.vorlagen:
@@ -201,7 +205,7 @@ class Motor:
                         raise Abgebrochen(f"vor Bild {len(bilder) + 1}")
                     ergebnis = self.m.generate_image(seed=seed, prompt=auftrag.beschreibung, image_paths=pfade,
                                                      num_inference_steps=auftrag.schritte, width=auftrag.breite,
-                                                     height=auftrag.hoehe, guidance=ANGABEN.guidance)
+                                                     height=auftrag.hoehe, guidance=self.angaben.guidance)
                     bilder.append(ergebnis.image)
                 return bilder
             finally:

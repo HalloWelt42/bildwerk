@@ -61,6 +61,9 @@ def test_pruefliste_passt_zu_mflux(kennung: str):
     assert sorted(filter_repo_objects(pfade, allow_patterns=muster)) == sorted(pfade)
     assert all(d.sha256 or d.git_sha1 for d in liste.dateien)
     assert not [p for p in pfade if p.endswith(".py")]                  # nie Code aus dem Modell-Repo
+    if getattr(m, "ZUSATZ_ZU", None):                                    # ein LoRA: nur Gewichte, die Grundlage prüft ihr Modul
+        assert pfade and all(p.endswith(".safetensors") for p in pfade) and getattr(m, "ZUSATZ_ZU") in MODELLE
+        return
     for teil in ("transformer", "text_encoder", "vae"):                  # jeder Teil mit Gewichten und Konfiguration
         assert any(p.startswith(f"{teil}/") and p.endswith(".safetensors") for p in pfade)
         assert f"{teil}/config.json" in pfade

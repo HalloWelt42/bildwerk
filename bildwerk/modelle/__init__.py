@@ -16,6 +16,7 @@ MODELLE: dict[str, str] = {
     "moss-image": "bildwerk.modelle.moss_image",
     "flux2-klein": "bildwerk.modelle.flux2_klein",
     "qwen-image-edit": "bildwerk.modelle.qwen_image_edit",
+    "qwen-image-edit-schnell": "bildwerk.modelle.qwen_image_edit_schnell",
 }
 
 

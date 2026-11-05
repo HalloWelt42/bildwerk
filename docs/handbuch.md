@@ -10,7 +10,7 @@ sicherung:
   - "das Repo liegt bisher nur auf dem Mac (keine entfernte Ablage): der Ordner gehört zur Sicherung des Macs"
 schluessel_orte: []
 einrichten: einrichten.sh
-stand: 2ebd1f2
+stand: eaae3ee
 ---
 
 # Bildwerk
@@ -27,6 +27,7 @@ verlangt; sie entscheidet über Laden, Entladen und Vorrang, und Apps (auch der 
 | moss-image | bild_erzeugen | MOSS-Image-SFT (Apache-2.0), 8 Bit, gerechnet mit mflux (MLX); Bilder aus Text, kein Bearbeiten |
 | flux2-klein | bild_erzeugen | FLUX.2 klein 9B (FLUX Non-Commercial License: Bilder nur nicht-kommerziell nutzen), 8 Bit, mflux (MLX); schnell in 4 Schritten, Bilder aus Text und nach bis zu 4 Vorlagen (Stil, Bezug) |
 | qwen-image-edit | bild_erzeugen | Qwen-Image-Edit-2511 (Apache-2.0, frei nutzbar), eigene 8-Bit-Ablage, mflux (MLX); bearbeitet nach Anweisung und zeichnet nach 1 bis 3 Vorlagen neu, rechnet nur mit Vorlage |
+| qwen-image-edit-schnell | bild_erzeugen | dasselbe Modell mit dem Lightning-LoRA von lightx2v (Apache-2.0, 0,85 GB): 8 Schritte, Stärke 1, rund ein Zehntel der Rechenzeit; Grundgewichte aus der 8-Bit-Ablage von qwen-image-edit |
 
 Sichtbar heißt der Dienst nach seinem Modell ("MOSS-Image", `name` der Dienstdatei); Maschinenraum, Leitstelle und
 Apps setzen die Aufgabe klein dahinter ("MOSS-Image · Bilderzeugung"). Die Kennung `bildwerk-moss-image` bleibt.
@@ -78,6 +79,8 @@ umwandeln, alles mit derselben Umgebung:
 Modell einmal in bfloat16 (rund 58 GB Speicher); vorher große Sprachmodelle über die Leitstelle entladen und danach
 genau so wieder laden. Erst wenn eine Messung über die Leitstelle (`tools/messen.py qwen-image-edit`) belegt, dass die
 eigene Ablage rechnet, legt derselbe Befehl mit `--original-loeschen` das Original in den Papierkorb (nicht endgültig).
+Die schnelle Fassung braucht diese Ablage und dazu nur das LoRA (0,85 GB):
+`HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte qwen-image-edit-schnell --laden`.
 Aus der Sicherung liegt die 8-Bit-Ablage schon in der Modellablage.
 
 Probe: `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte moss-image --pruefsummen` (ebenso

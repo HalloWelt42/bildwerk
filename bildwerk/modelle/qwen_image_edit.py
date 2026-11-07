@@ -26,7 +26,7 @@ from typing import Any
 
 from PIL import Image
 
-from ..bildformat import Bildauftrag, Groessenregel, Modellangaben, Schrittregel
+from ..bildformat import Bildauftrag, Groessenregel, Modellangaben, Schrittregel, aufgaben_lesen
 from ..gewichte import Gewichtsstand, Pruefliste, ablage, aus_ordner, pruefen
 from ..unterbau import Abgebrochen, Einstellungen, GewichteFehlen, Quantisierung
 from .moss_image import Abbruchwache
@@ -39,6 +39,8 @@ PRUEFLISTE_QUELLE = Path(__file__).with_name("qwen_image_edit.json")
 #: Ort der eigenen Ablage relativ zur Modellablage
 LOKAL = "bild/mflux/qwen-image-edit-2511-8bit"
 BITS = 8
+#: wie das Modell Aufgaben (Entfernen, Füllen, Erweitern, frei) als Anweisung bekommt; Text, kein Code
+AUFGABEN = Path(__file__).with_name("qwen_image_edit.aufgaben.toml")
 
 ANGABEN = Modellangaben(
     kennung="qwen-image-edit",
@@ -65,6 +67,7 @@ ANGABEN = Modellangaben(
     # mflux: ohne Angabe 2,5 beim Bearbeiten
     guidance=2.5,
     beschreibung_max_token=1024,
+    aufgaben=aufgaben_lesen(AUFGABEN),
 )
 
 

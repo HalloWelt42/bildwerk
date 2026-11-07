@@ -1,0 +1,34 @@
+# Aufgabenvorlagen für Qwen-Image-Edit-2511 (beide Dienste, gründlich und schnell; ATL-26 des Ateliers).
+#
+# Qwen befolgt Anweisungen auf Englisch und Chinesisch; die Worte des Nutzers kommen übersetzt an die Stelle von
+# {wunsch}. Die Fläche, die eine Aufgabe betrifft, steht in der Vorlage deckend in der Signalfarbe (Qwen kennt keine
+# eigene Maske). Gemessen am 05.11.2026 mit "Bank entfernen" (Atelier ATL-21): Bank vollständig weg, kein Magenta übrig.
+
+[anweisen]
+anweisung = "{wunsch}"
+sprache = "en"
+
+[entfernen]
+anweisung = """Fill the solid magenta area with what would naturally be behind it, continuing the surrounding scene \
+seamlessly (same light, perspective, texture and grain). Do not add any new object, person or text. Keep everything \
+outside it exactly as it is. No magenta may remain in the result."""
+sprache = "en"
+signalfarbe = [255, 0, 255]
+
+[fuellen]
+anweisung = """Replace the solid magenta area completely with: {wunsch}. Keep everything outside it exactly as it is. \
+No magenta may remain in the result."""
+ohne_wunsch = """Replace the solid magenta area completely so that it matches the surrounding image naturally (same \
+light, perspective, texture and grain). Keep everything outside it exactly as it is. No magenta may remain in the \
+result."""
+sprache = "en"
+signalfarbe = [255, 0, 255]
+
+[erweitern]
+anweisung = """Replace the solid magenta border completely with: {wunsch}. Keep everything outside it exactly as it is. \
+No magenta may remain in the result."""
+ohne_wunsch = """Replace the solid magenta border completely so that it matches the surrounding image naturally (same \
+light, perspective, texture and grain). Keep everything outside it exactly as it is. No magenta may remain in the \
+result."""
+sprache = "en"
+signalfarbe = [255, 0, 255]

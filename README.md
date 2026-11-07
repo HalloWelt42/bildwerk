@@ -69,6 +69,13 @@ Bilder heißt), Größenregel (Raster, Kanten, Fläche, Vorgabe, empfohlene
 Größen), Schrittregel (Vorgabe, kleinste, größte), Führung, längste Beschreibung in Token, Quelle (Repo und Revision
 der Gewichte), Quantisierung, Rechenwerk (mflux mit Fassung und Commit) und Zustand.
 
+Modelle, die bearbeiten, nennen dazu `aufgaben`: je Aufgabe (`anweisen`, `entfernen`, `fuellen`, `erweitern`), wie das
+Modell sie als Anweisung bekommt. Die Texte stehen nicht im Code, sondern in einer Datei je Modell
+(`bildwerk/modelle/<modell>.aufgaben.toml`): `anweisung` mit dem Platzhalter `{wunsch}` für die Worte des Nutzers,
+`ohne_wunsch` für einen leeren Wunsch, `sprache` (in diese Sprache übersetzt die Anwendung den Wunsch) und `signalfarbe`
+(so deckend steht die betroffene Fläche in der Vorlage). Die Anwendung nennt nur Aufgabe und Wunsch und setzt die
+Anweisung daraus zusammen; eine geänderte Vorlage gilt nach dem nächsten Start des Dienstes.
+
 MOSS-Image: Größen mit Kanten durch 16, je 256 bis 2048, Fläche 512x512 bis 2048x2048, am besten 1 bis 2 Megapixel;
 Schritte 1 bis 218, Vorgabe 50; Führung 3; Beschreibungen bis 4096 Token, auch als Schlagwortfolge oder als Anordnung in
 JSON; Schrift im Bild auf Englisch und Chinesisch.

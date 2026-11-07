@@ -31,7 +31,7 @@ asyncio_default_fixture_loop_scope = "function"
 include = ["bildwerk*"]
 
 [tool.setuptools.package-data]
-"bildwerk.modelle" = ["*.json"]
+"bildwerk.modelle" = ["*.json", "*.aufgaben.toml"]
 
 [tool.setuptools.dynamic]
 version = {attr = "bildwerk.__version__"}

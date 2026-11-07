@@ -66,6 +66,34 @@ def test_steckbrief_nennt_vorlagen_und_lizenz():
     assert s["schritte"] == {"vorgabe": 40, "kleinste": 1, "groesste": 100}
 
 
+def test_steckbrief_nennt_aufgabenvorlagen():
+    """ATL-26: je Aufgabe die Anweisung mit Platzhalter, Sprache und Signalfarbe, aus der TOML-Datei des Modells."""
+    with TestClient(erstellen("qwen-image-edit", ScheinMotor(), Einstellungen())) as c:
+        a = c.get("/v1/models").json()["data"][0]["steckbrief"]["aufgaben"]
+    assert set(a) == {"anweisen", "entfernen", "fuellen", "erweitern"}
+    assert a["anweisen"] == {"anweisung": "{wunsch}", "ohne_wunsch": None, "sprache": "en", "signalfarbe": None}
+    assert "{wunsch}" not in a["entfernen"]["anweisung"] and a["entfernen"]["signalfarbe"] == [255, 0, 255]
+    assert "{wunsch}" in a["fuellen"]["anweisung"] and "{wunsch}" not in a["fuellen"]["ohne_wunsch"]
+    assert "border" in a["erweitern"]["anweisung"] and not a["erweitern"]["anweisung"].count("\\")
+
+
+def test_aufgabenvorlage_prueft_platzhalter_und_farbe(tmp_path):
+    from pydantic import ValidationError
+    from bildwerk.bildformat import aufgaben_lesen
+
+    datei = tmp_path / "a.toml"
+    datei.write_text('[fuellen]\nanweisung = "x {wunsch}"\nohne_wunsch = "y {wunsch}"\nsprache = "en"\n')
+    with pytest.raises(ValidationError):
+        aufgaben_lesen(datei)
+    datei.write_text('[fuellen]\nanweisung = "x"\nsprache = "en"\nsignalfarbe = [300, 0, 0]\n')
+    with pytest.raises(ValidationError):
+        aufgaben_lesen(datei)
+    datei.write_text('[malen]\nanweisung = "x"\nsprache = "en"\n')
+    with pytest.raises(ValueError):
+        aufgaben_lesen(datei)
+    assert aufgaben_lesen(tmp_path / "fehlt.toml") == {}
+
+
 def test_eigene_ablage_pruefliste(tmp_path):
     hf = tmp_path / "huggingface"
     hf.mkdir()

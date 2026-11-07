@@ -7,7 +7,10 @@ einzigen Bildweg für alle Bildmodelle; was ein Modell kann (Größen, Schritte,
 from __future__ import annotations
 
 import re
+import tomllib
 from datetime import date
+from enum import Enum
+from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -51,6 +54,55 @@ class Schrittregel(BaseModel):
     groesste: int
 
 
+class Aufgabe(str, Enum):
+    """Was eine Anwendung mit einem Bild vorhat; das Modell sagt je Aufgabe, wie es die Anweisung dafür versteht."""
+
+    ANWEISEN = "anweisen"        # frei nach dem Wunsch des Nutzers
+    ENTFERNEN = "entfernen"      # die markierte Fläche verschwindet, die Szene geht dahinter weiter
+    FUELLEN = "fuellen"          # die markierte Fläche füllen, mit dem Wunsch oder passend zur Umgebung
+    ERWEITERN = "erweitern"      # der markierte Rand um das Bild wird ergänzt
+
+
+WUNSCH = "{wunsch}"
+
+
+class Aufgabenvorlage(BaseModel):
+    """Wie das Modell eine Aufgabe als Anweisung bekommt (ATL-26 des Ateliers): fester Text in der Sprache, die das Modell
+    befolgt, mit dem Platzhalter `{wunsch}` für die Worte des Nutzers (übersetzt in `sprache`). Die Fläche, die die
+    Aufgabe betrifft, steht in der Vorlage deckend in `signalfarbe`."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    anweisung: str = Field(min_length=1, description="mit {wunsch}, wenn die Aufgabe einen Wunsch aufnimmt")
+    ohne_wunsch: str | None = Field(default=None, description="gilt bei leerem Wunsch; fehlt sie, braucht die Aufgabe einen Wunsch "
+                                                               "(steht kein {wunsch} in der Anweisung, nimmt sie keinen)")
+    sprache: str = Field(pattern=r"^[a-z]{2}$", description="ISO 639-1; in diese Sprache wird der Wunsch übersetzt")
+    signalfarbe: tuple[int, int, int] | None = Field(default=None, description="RGB der markierten Fläche; ohne: die Aufgabe markiert nichts")
+
+    @field_validator("signalfarbe")
+    @classmethod
+    def _farbe(cls, wert: tuple[int, int, int] | None) -> tuple[int, int, int] | None:
+        if wert is not None and not all(0 <= k <= 255 for k in wert):
+            raise ValueError("Signalfarbe als drei Werte 0 bis 255")
+        return wert
+
+    @field_validator("ohne_wunsch")
+    @classmethod
+    def _ohne(cls, wert: str | None) -> str | None:
+        if wert is not None and WUNSCH in wert:
+            raise ValueError("Die Anweisung ohne Wunsch darf keinen Platzhalter {wunsch} enthalten")
+        return wert
+
+
+def aufgaben_lesen(pfad: Path) -> dict[Aufgabe, Aufgabenvorlage]:
+    """Die Aufgabenvorlagen eines Modells aus seiner TOML-Datei (je Aufgabe eine Tabelle); fehlt die Datei: keine."""
+    if not pfad.is_file():
+        return {}
+    with pfad.open("rb") as datei:
+        roh = tomllib.load(datei)
+    return {Aufgabe(name): Aufgabenvorlage.model_validate(werte) for name, werte in roh.items()}
+
+
 class Modellangaben(BaseModel):
     """Was ein Bildmodell ist und kann; fest je Modell, von Hand nach Modellkarte und Rechenwerk."""
 
@@ -74,6 +126,7 @@ class Modellangaben(BaseModel):
     schritte: Schrittregel
     guidance: float = Field(description="Stärke der Führung durch die Beschreibung (CFG), wie die Modellkarte sie vorgibt")
     beschreibung_max_token: int
+    aufgaben: dict[Aufgabe, Aufgabenvorlage] = Field(default_factory=dict, description="Anweisung je Aufgabe (nur Modelle, die bearbeiten)")
 
     def meint(self, model: str) -> bool:
         return model in (self.kennung, self.name, *self.aliase)

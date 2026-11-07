@@ -1,0 +1,21 @@
+{
+  "modell": "qwen-image-edit-schnell",
+  "dienst": "bildwerk-qwen-image-edit-schnell",
+  "gemessen_am": "2026-11-07T00:57:30+00:00",
+  "anlass": "Atelier ATL-21: Bank am See entfernen, Fläche in Signalfarbe, englische Anweisung, über die Leitstelle",
+  "groesse": "752x672",
+  "schritte": 8,
+  "laden_s": 22,
+  "je_schritt_s": 32.3,
+  "bis_antwort_s": 283.2,
+  "speicher_spitze_gb": 37,
+  "swap_zuwachs_gb": 0,
+  "ergebnis": "Bank vollständig entfernt, Weg und Blumen natürlich fortgesetzt, kein Magenta übrig",
+  "vergleich": {
+    "gemessen_am": "2026-11-05",
+    "je_schritt_s": 108.4,
+    "bis_antwort_s": 863.3,
+    "unterschied": "damals zwei Durchgänge je Schritt (Gegenanweisung bei Stärke 1) und das Sprachmodell mit 80 Mrd. Parametern geladen (12,7 GB ausgelagert)"
+  },
+  "hinweis": "mflux backt das LoRA in die 8-Bit-Gewichte und meldet, dass dabei nur 64 % der Änderung wirken (bake_lora=False hielte alles)"
+}

@@ -24,8 +24,11 @@ Anwendungen  ->  Leitstelle  ->  Maschinenraum  ->  Bildwerk moss-image
 | `moss-image` | 8791 | bild_erzeugen | MOSS-Image-SFT (4,9 Mrd. Parameter, Textkodierer Qwen3.5-9B), Vorgabe 8 Bit | nein | Apache-2.0 |
 | `flux2-klein` | 8794 | bild_erzeugen | FLUX.2 klein 9B (9 Mrd. Parameter, Textkodierer Qwen3-8B), Vorgabe 8 Bit, 4 Schritte | ja, 1 bis 4 Vorlagen | FLUX Non-Commercial License |
 | `qwen-image-edit` | 8795 | bild_erzeugen | Qwen-Image-Edit-2511 (20 Mrd. Parameter, Textkodierer Qwen2.5-VL-7B), eigene 8-Bit-Ablage, 40 Schritte | nur mit Vorlage, 1 bis 3 | Apache-2.0 |
+| `bild-entfernen-schnell` | 8797 | bild_erzeugen (Bearbeiten: nur Entfernen) | LaMa big (51 Mio. Parameter, fp32) als Core-ML-Paket, für den Mac übersetzt; gemessen über die Leitstelle 0,3 bis 0,4 s je Bild | genau 1 Vorlage, Fläche in der Signalfarbe | Apache-2.0 |
 
-Gerechnet wird mit [mflux](https://github.com/mflux-community/mflux) ganz in MLX auf der Grafik des Macs. Innerhalb
+Gerechnet wird mit [mflux](https://github.com/mflux-community/mflux) ganz in MLX auf der Grafik des Macs; `bild-entfernen-schnell`
+rechnet ein Core-ML-Paket über coremltools (Grafik und Neural Engine). Dienste heißen nach ihrer Fähigkeit und Eigenschaft
+(etwa `bild-entfernen-schnell`), ältere noch `bildwerk-<modell>` (Umbenennung geplant). Innerhalb
 eines Dienstes rechnet immer nur ein Auftrag zugleich; der Zwischenspeicher für Grafikpuffer ist begrenzt
 (`BILDWERK_MLX_ZWISCHENSPEICHER_GB`, Vorgabe 2) und wird nach jeder Rechnung geleert. Feste Zeitgrenzen gibt es nicht;
 schließt der Aufrufer die Verbindung (die Leitstelle bricht einen Auftrag ab), endet die Rechnung beim nächsten Schritt.

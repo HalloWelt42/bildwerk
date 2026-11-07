@@ -15,7 +15,7 @@ DEPLOY = Path(__file__).resolve().parent.parent / "deploy"
 
 
 def test_je_modell_eine_dienstdatei():
-    assert sorted(p.stem for p in DEPLOY.glob("bildwerk-*.toml")) == sorted(dienstkennung(k) for k in MODELLE)
+    assert sorted(p.stem for p in DEPLOY.glob("*.toml")) == sorted(dienstkennung(k) for k in MODELLE)
 
 
 @pytest.mark.parametrize("kennung", sorted(MODELLE))
@@ -27,5 +27,6 @@ def test_dienstdatei_passt_zum_modell(kennung: str):
     assert d["faehigkeiten"] == m.ANGABEN.faehigkeiten
     assert d["eignung"] == m.ANGABEN.eignung and d["sprachen"] == m.ANGABEN.sprachen
     assert d["umgebung"]["HF_HUB_OFFLINE"] == "1"
-    Quantisierung(d["umgebung"]["BILDWERK_QUANTISIERUNG"])
+    if "BILDWERK_QUANTISIERUNG" in d["umgebung"]:            # Modelle mit fester Genauigkeit (LaMa) brauchen keine
+        Quantisierung(d["umgebung"]["BILDWERK_QUANTISIERUNG"])
     assert d["speicher_gb"] > 0 and d["startzeit_s"] > 0

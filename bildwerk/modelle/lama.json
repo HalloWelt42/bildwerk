@@ -1,0 +1,28 @@
+{
+  "repo": "mlboydaisuke/LaMa-CoreML",
+  "revision": "5ed76e3799ab4cad31381750d29880c267477e18",
+  "lizenz": "Apache-2.0",
+  "lokal": "bild/coreml/lama-big-800.mlmodelc",
+  "dateien": [
+    {
+      "pfad": "analytics/coremldata.bin",
+      "groesse": 243,
+      "sha256": "ee5075c05264cb9810553f59132a72e8fb0c620a767929ba563e1617d58f49c8"
+    },
+    {
+      "pfad": "coremldata.bin",
+      "groesse": 351,
+      "sha256": "f103e36af0c77d1e022637f06922bcab5893b94a31e202fafd7989b8246f8d2f"
+    },
+    {
+      "pfad": "model.mil",
+      "groesse": 1306202,
+      "sha256": "1216af6aae5b3a5cbbd54f939a4d521e25f3c560cfb3ceb1734832f27eb33d9d"
+    },
+    {
+      "pfad": "weights/weight.bin",
+      "groesse": 215544960,
+      "sha256": "d0541f6044a94cd4982bfdac074fc1ccfe11d8f1f590c299d6b5071b501fc184"
+    }
+  ]
+}

@@ -127,6 +127,7 @@ class Modellangaben(BaseModel):
     schritte: Schrittregel
     guidance: float = Field(description="Stärke der Führung durch die Beschreibung (CFG), wie die Modellkarte sie vorgibt")
     beschreibung_max_token: int
+    anzahl_max: int = Field(default=ANZAHL_MAX, ge=1, le=ANZAHL_MAX, description="Bilder je Auftrag höchstens (ein Modell, das immer gleich rechnet: 1)")
     aufgaben: dict[Aufgabe, Aufgabenvorlage] = Field(default_factory=dict, description="Anweisung je Aufgabe (nur Modelle, die bearbeiten)")
 
     def meint(self, model: str) -> bool:
@@ -150,7 +151,6 @@ class Steckbrief(Modellangaben):
     quelle: Quelle
     quantisierung: str
     rechenwerk: Rechenwerk
-    anzahl_max: int = ANZAHL_MAX
     zustand: str
 
 

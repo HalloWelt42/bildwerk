@@ -1,0 +1,21 @@
+# Dienst bild-entfernen-schnell: markierte Flächen entfernen mit LaMa (big, Core ML), unter einer Sekunde (ATL-33 des
+# Ateliers). Benannt nach Fähigkeit und Eigenschaft (HELF-189); das Modell steht im Steckbrief. Je Prozess genau ein Modell;
+# es lädt beim Start, laufen heißt geladen. Der Dienst startet nie von selbst: Starten und Anhalten nur über den
+# Maschinenraum, wenn die Leitstelle es verlangt.
+# installieren.sh legt diese Datei als ~/Maschinenraum/dienste/bild-entfernen-schnell.toml an (ordner auf den Klon gesetzt).
+name = "Bild entfernen schnell (LaMa)"
+beschreibung = "Markierte Flächen entfernen und mit dem füllen, was dahinter läge, in unter einer Sekunde (LaMa big, Core ML); Apache-2.0, frei nutzbar; erfindet nichts Neues"
+ordner = "~/Entwicklung/Werkzeuge/Bildwerk"
+befehl = [".venv/bin/python", "-m", "bildwerk", "lama", "--port", "$MASCHINENRAUM_PORT"]
+port = 8797
+pruefadresse = "http://127.0.0.1:8797/gesundheit"
+faehigkeiten = ["bild_erzeugen"]
+eignung = ["schnell"]
+sprachen = []
+# Schätzung bis zur ersten Messung: Gewichte 216 MB, laut Modellkarte Spitze rund 600 MB, dazu der Dienst
+speicher_gb = 1.5
+startzeit_s = 30
+anhaltezeit_s = 10
+
+[umgebung]
+HF_HUB_OFFLINE = "1"

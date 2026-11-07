@@ -102,6 +102,8 @@ def erstellen(dienst: str, motor: Motor, einstellungen: Einstellungen | None = N
             breite, hoehe = a.groessen.kanten(anfrage.size or a.groessen.vorgabe)
         except ValueError as f:
             raise HTTPException(400, str(f)) from None
+        if anfrage.n > a.anzahl_max:
+            raise HTTPException(400, f"{a.name} rechnet höchstens {a.anzahl_max} Bild(er) je Auftrag, nicht {anfrage.n}.")
         schritte = a.schritte.vorgabe if anfrage.steps is None else anfrage.steps
         if not a.schritte.kleinste <= schritte <= a.schritte.groesste:
             raise HTTPException(400, f"Schritte {a.schritte.kleinste} bis {a.schritte.groesste}, nicht {schritte}.")
@@ -142,10 +144,15 @@ def erstellen(dienst: str, motor: Motor, einstellungen: Einstellungen | None = N
             raise HTTPException(422, detail) from None
         return await ausfuehren(auftrag_aus(anfrage, vorlagen_lesen(anfrage.images, a.vorlagen_max, a.vorlagen_min)), request)
 
+    # Genauigkeit: was der Motor selbst nennt (eine feste Ablage, etwa fp32 oder 8 Bit), sonst die Einstellung des Dienstes
+    q = getattr(motor, "quantisierung", e.quantisierung)
+    genauigkeit = q.value if hasattr(q, "value") else str(q)
+
     @app.get("/v1/models", response_model=Modellliste)
     async def modelle() -> Modellliste:
         steckbrief = Steckbrief(**a.model_dump(), quelle=Quelle(repo=motor.pruefliste.repo, revision=motor.pruefliste.revision),
-                                quantisierung=e.quantisierung.value, rechenwerk=rechenwerk(), zustand=rechner.zustand.value)
+                                quantisierung=genauigkeit, rechenwerk=motor.rechenwerk() if hasattr(motor, "rechenwerk") else rechenwerk(),
+                                zustand=rechner.zustand.value)
         return Modellliste(data=[Modelleintrag(id=a.kennung, created=erschienen, steckbrief=steckbrief)])
 
     return app

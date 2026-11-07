@@ -4,7 +4,9 @@ Maschinenraum dieses Rechners für den Dienst gemessen hat. Das Ergebnis geht al
 und als Tabelle auf die Ausgabe.
 
     LEITSTELLE_ADRESSE=http://leitstelle:8530 .venv/bin/python tools/messen.py flux2-klein \\
-        --schluessel-datei ~/.config/leitstelle/<anwendung>.schluessel --vorlage stil.png
+        --schluessel-datei ~/.config/leitstelle/<anwendung>.schluessel --vorlage stil.png [--ergebnis bild.png]
+
+Der Dienst heißt, wie das Modul ihn nennt (DIENST nach Fähigkeit, sonst bildwerk-<modell>).
 
 Der Schlüssel gehört einer Anwendung der Leitstelle, die bild_erzeugen für dieses Modell darf; er wird nie ausgegeben.
 """
@@ -37,7 +39,7 @@ def spitze_gb(dienst: str) -> float | None:
     return eintrag.get("spitze_gb") if eintrag else None
 
 
-def lauf(c: httpx.Client, dienst: str, seed: int, vorlage: str | None, groesse: str, schritte: int) -> dict:
+def lauf(c: httpx.Client, dienst: str, seed: int, vorlage: str | None, groesse: str, schritte: int, ergebnis: Path | None = None) -> dict:
     koerper = {"model": dienst, "prompt": "A quiet reading room at night, warm orange light, a globe and an open book on a desk",
                "size": groesse, "steps": schritte, "seed": seed, "response_format": "b64_json"}
     if vorlage:
@@ -48,6 +50,8 @@ def lauf(c: httpx.Client, dienst: str, seed: int, vorlage: str | None, groesse: 
     if r.status_code != 200:
         raise SystemExit(f"Lauf mit Startwert {seed}: {r.status_code} {r.text[:300]}")
     zusatz = r.json().get("x-leitstelle", {})
+    if ergebnis is not None and not ergebnis.exists():
+        ergebnis.write_bytes(base64.b64decode(r.json()["data"][0]["b64_json"]))
     return {"seed": seed, "vorlage": bool(vorlage), "groesse": groesse, "schritte": zusatz.get("schritte", schritte),
             "dauer_s": round(zusatz.get("dauer_ms", 0) / 1000, 2), "bis_antwort_s": round(gesamt_s, 2)}
 
@@ -60,13 +64,14 @@ def main() -> int:
     p.add_argument("--laeufe", type=int, default=3)
     p.add_argument("--groesse", default="1024x1024")
     p.add_argument("--schritte", type=int, help="Vorgabe: die des Modells")
+    p.add_argument("--ergebnis", type=Path, help="das erste Bild mit Vorlage hierhin speichern (zum Ansehen der Qualität)")
     a = p.parse_args()
     adresse = os.environ.get("LEITSTELLE_ADRESSE")
     if not adresse:
         raise SystemExit("LEITSTELLE_ADRESSE setzen (Adresse der Leitstelle)")
-    dienst = f"bildwerk-{a.modell}"
     sys.path.insert(0, str(WURZEL))
-    from bildwerk.modelle import modul
+    from bildwerk.modelle import dienstkennung, modul
+    dienst = dienstkennung(a.modell)
     angaben = modul(a.modell).ANGABEN
     schritte = a.schritte or angaben.schritte.vorgabe
     if angaben.vorlagen_min and not a.vorlage:
@@ -81,7 +86,7 @@ def main() -> int:
             print(laeufe[-1], flush=True)
         if vorlage:
             for i in range(a.laeufe):
-                laeufe.append(lauf(c, dienst, 200 + i, vorlage, a.groesse, schritte))
+                laeufe.append(lauf(c, dienst, 200 + i, vorlage, a.groesse, schritte, a.ergebnis))
                 print(laeufe[-1], flush=True)
 
     def mittel(mit: bool) -> float | None:

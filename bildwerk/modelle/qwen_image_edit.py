@@ -71,7 +71,7 @@ ANGABEN = Modellangaben(
 )
 
 
-def mflux_herkunft() -> tuple[str, str, list[str]]:
+def herkunft() -> tuple[str, str, list[str]]:
     """Repo, Revision und Dateimuster (Gewichte und Tokenizer), wie der gepinnte Stand von mflux sie für Qwen-Image-Edit-2511
     verlangt."""
     from mflux.models.common.config import ModelConfig

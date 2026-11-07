@@ -51,16 +51,19 @@ def test_pruefen(tmp_path: Path):
 
 @pytest.mark.parametrize("kennung", sorted(MODELLE))
 def test_pruefliste_passt_zu_mflux(kennung: str):
-    """Repo, Revision und Dateien der Prüfliste sind genau das, was der gepinnte Stand von mflux lädt; nach einem neuen
-    Pin schlägt das fehl, bis `bildwerk pruefliste <modell>` die Liste erneuert hat."""
+    """Repo, Revision und Dateien der Prüfliste sind genau das, was das Modell lädt (bei mflux-Modellen der gepinnte Stand
+    von mflux); nach einem neuen Pin schlägt das fehl, bis `bildwerk pruefliste <modell>` die Liste erneuert hat."""
     m = modul(kennung)
     liste = Pruefliste.lesen(getattr(m, "PRUEFLISTE_QUELLE", m.PRUEFLISTE))     # bei eigener Ablage: die Quelle
-    repo, revision, muster = m.mflux_herkunft()
+    repo, revision, muster = m.herkunft()
     assert (liste.repo, liste.revision, liste.lizenz) == (repo, revision, m.ANGABEN.lizenz)
     pfade = [d.pfad for d in liste.dateien]
     assert sorted(filter_repo_objects(pfade, allow_patterns=muster)) == sorted(pfade)
     assert all(d.sha256 or d.git_sha1 for d in liste.dateien)
     assert not [p for p in pfade if p.endswith(".py")]                  # nie Code aus dem Modell-Repo
+    if getattr(m, "RECHENWERK", "mflux") == "coreml":                   # ein Core-ML-Paket: nur das Paket, mit Gewichten
+        assert any(p.endswith("weight.bin") for p in pfade) and all(p.startswith("LaMa.mlpackage/") for p in pfade)
+        return
     if getattr(m, "ZUSATZ_ZU", None):                                    # ein LoRA: nur Gewichte, die Grundlage prüft ihr Modul
         assert pfade and all(p.endswith(".safetensors") for p in pfade) and getattr(m, "ZUSATZ_ZU") in MODELLE
         return

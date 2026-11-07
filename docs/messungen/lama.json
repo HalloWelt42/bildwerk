@@ -1,0 +1,37 @@
+{
+  "modell": "lama",
+  "dienst": "bild-entfernen-schnell",
+  "gemessen_am": "2026-11-07T14:30:56+00:00",
+  "groesse": "896x512",
+  "schritte": 1,
+  "laden_und_warten_s": 4.2,
+  "dauer_ohne_vorlage_s": null,
+  "dauer_mit_vorlage_s": 1.04,
+  "speicher_spitze_gb": null,
+  "laeufe": [
+    {
+      "seed": 200,
+      "vorlage": true,
+      "groesse": "896x512",
+      "schritte": 1,
+      "dauer_s": 2.35,
+      "bis_antwort_s": 6.52
+    },
+    {
+      "seed": 201,
+      "vorlage": true,
+      "groesse": "896x512",
+      "schritte": 1,
+      "dauer_s": 0.44,
+      "bis_antwort_s": 0.52
+    },
+    {
+      "seed": 202,
+      "vorlage": true,
+      "groesse": "896x512",
+      "schritte": 1,
+      "dauer_s": 0.33,
+      "bis_antwort_s": 0.41
+    }
+  ]
+}

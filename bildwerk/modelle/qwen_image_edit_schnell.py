@@ -59,7 +59,7 @@ class OhneGegendurchgang:
         return getattr(self._bildteil, name)
 
 
-def mflux_herkunft() -> tuple[str, str, list[str]]:
+def herkunft() -> tuple[str, str, list[str]]:
     liste = Pruefliste.lesen(PRUEFLISTE)
     return liste.repo, liste.revision, [d.pfad for d in liste.dateien]
 

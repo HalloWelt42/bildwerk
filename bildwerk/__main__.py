@@ -50,7 +50,7 @@ def pruefliste(kennung: str) -> int:
     from .gewichte import erstellen
 
     m = modul(kennung)
-    repo, revision, muster = m.mflux_herkunft()
+    repo, revision, muster = m.herkunft()
     liste = erstellen(repo, revision, muster, m.ANGABEN.lizenz)
     ziel = getattr(m, "PRUEFLISTE_QUELLE", m.PRUEFLISTE)
     liste.schreiben(ziel)

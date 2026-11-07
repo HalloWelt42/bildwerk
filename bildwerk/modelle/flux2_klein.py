@@ -54,7 +54,7 @@ ANGABEN = Modellangaben(
 )
 
 
-def mflux_herkunft() -> tuple[str, str, list[str]]:
+def herkunft() -> tuple[str, str, list[str]]:
     """Repo, Revision und Dateimuster, wie der gepinnte Stand von mflux sie für FLUX.2 klein 9B verlangt."""
     from mflux.models.common.config import ModelConfig
     from mflux.models.common.resolution.model_revisions import ModelRevisions

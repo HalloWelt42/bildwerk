@@ -149,7 +149,7 @@ def test_angaben_wie_mflux():
 
     c = ModelConfig.qwen_image_edit_2511()
     a = qwen_image_edit.ANGABEN
-    assert a.meint(c.model_name) and qwen_image_edit.mflux_herkunft()[0] == "Qwen/Qwen-Image-Edit-2511"
+    assert a.meint(c.model_name) and qwen_image_edit.herkunft()[0] == "Qwen/Qwen-Image-Edit-2511"
 
 
 def test_original_erst_nach_messung_und_nur_in_den_papierkorb(tmp_path, monkeypatch):

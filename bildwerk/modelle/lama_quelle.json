@@ -1,0 +1,22 @@
+{
+  "repo": "mlboydaisuke/LaMa-CoreML",
+  "revision": "5ed76e3799ab4cad31381750d29880c267477e18",
+  "lizenz": "Apache-2.0",
+  "dateien": [
+    {
+      "pfad": "LaMa.mlpackage/Data/com.apple.CoreML/model.mlmodel",
+      "groesse": 1101809,
+      "sha256": "06a100ef99e0fd16326a3a8c4a687d13f7b26f544ea906a75338932d8554f953"
+    },
+    {
+      "pfad": "LaMa.mlpackage/Data/com.apple.CoreML/weights/weight.bin",
+      "groesse": 215544960,
+      "sha256": "d0541f6044a94cd4982bfdac074fc1ccfe11d8f1f590c299d6b5071b501fc184"
+    },
+    {
+      "pfad": "LaMa.mlpackage/Manifest.json",
+      "groesse": 617,
+      "git_sha1": "294b935fda2cb4bd8d177a12509df8cdde0d5ad9"
+    }
+  ]
+}

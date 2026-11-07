@@ -26,6 +26,7 @@ Anwendungen  ->  Leitstelle  ->  Maschinenraum  ->  Bildwerk moss-image
 | `qwen-image-edit` | 8795 | bild_erzeugen | Qwen-Image-Edit-2511 (20 Mrd. Parameter, Textkodierer Qwen2.5-VL-7B), eigene 8-Bit-Ablage, 40 Schritte | nur mit Vorlage, 1 bis 3 | Apache-2.0 |
 | `bild-entfernen-schnell` | 8797 | bild_erzeugen (Bearbeiten: nur Entfernen) | LaMa big (51 Mio. Parameter, fp32) als Core-ML-Paket, für den Mac übersetzt; gemessen über die Leitstelle 0,3 bis 0,4 s je Bild | genau 1 Vorlage, Fläche in der Signalfarbe | Apache-2.0 |
 | `bild-entfernen` | 8798 | bild_erzeugen (Bearbeiten: nur Entfernen) | FLUX.2 klein 4B (8 Bit) mit dem LoRA erase-v1 über mflux: entfernt samt Schatten und Spiegelung, 4 Schritte, Text fertig kodiert aus der Modellkarte; Mittelstufe zwischen LaMa und Qwen | genau 1 Vorlage, Fläche in der Signalfarbe | Apache-2.0 |
+| `bild-entfernen-osor` | 8799 | bild_erzeugen (Bearbeiten: nur Entfernen) | OSOR auf SDXL-Inpainting 0.1 (LoRA Rang 256 mit Alpha-Kopf) in PyTorch: ein Schritt, entfernt samt Schatten und Spiegelung, verzeiht ungenaue Masken; Vergleich der Mittelstufe (Name vorläufig) | genau 1 Vorlage, Fläche in der Signalfarbe | CreativeML Open RAIL++-M |
 
 Gerechnet wird mit [mflux](https://github.com/mflux-community/mflux) ganz in MLX auf der Grafik des Macs; `bild-entfernen-schnell`
 rechnet ein Core-ML-Paket über coremltools (Grafik und Neural Engine). Dienste heißen nach ihrer Fähigkeit und Eigenschaft

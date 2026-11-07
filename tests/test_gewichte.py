@@ -67,7 +67,8 @@ def test_pruefliste_passt_zu_mflux(kennung: str):
     if getattr(m, "ZUSATZ_ZU", None):                                    # ein LoRA: nur Gewichte, die Grundlage prüft ihr Modul
         assert pfade and all(p.endswith(".safetensors") for p in pfade) and getattr(m, "ZUSATZ_ZU") in MODELLE
         return
-    for teil in ("transformer", "text_encoder", "vae"):                  # jeder Teil mit Gewichten und Konfiguration
+    teile = ("unet", "text_encoder", "text_encoder_2", "vae") if getattr(m, "RECHENWERK", "mflux") == "torch" else ("transformer", "text_encoder", "vae")
+    for teil in teile:                                                   # jeder Teil mit Gewichten und Konfiguration
         assert any(p.startswith(f"{teil}/") and p.endswith(".safetensors") for p in pfade)
         assert f"{teil}/config.json" in pfade
 

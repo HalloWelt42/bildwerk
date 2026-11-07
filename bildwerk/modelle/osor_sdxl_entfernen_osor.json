@@ -1,0 +1,12 @@
+{
+  "repo": "QinmingZhou/OSOR",
+  "revision": "9288156766b1df44e5f50fb697876a6f2fd8c062",
+  "lizenz": "CreativeML Open RAIL++-M",
+  "dateien": [
+    {
+      "pfad": "osor-sdxlinpainting/weights/sdxlinpainting_phase2.pth",
+      "groesse": 3112296806,
+      "sha256": "4f6abee0f152919fa8faca1895820ee531adb2b42b5de25db2e9a311aa47face"
+    }
+  ]
+}

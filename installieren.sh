@@ -12,7 +12,7 @@ DIENSTE="${MASCHINENRAUM_ORDNER:-$HOME/Maschinenraum}/dienste"
 "$PYTHON" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' || { echo "Python 3.11 oder neuer nötig" >&2; exit 1; }
 [ -d "$HIER/.venv" ] || "$PYTHON" -m venv "$HIER/.venv"
 "$HIER/.venv/bin/pip" install --quiet --upgrade pip
-"$HIER/.venv/bin/pip" install --quiet -c "$HIER/einschraenkungen.txt" -e "$HIER[mflux,coreml,test]"
+"$HIER/.venv/bin/pip" install --quiet -c "$HIER/einschraenkungen.txt" -e "$HIER[mflux,coreml,torch,test]"
 echo "Umgebung bereit: $HIER/.venv"
 
 if [ -d "$DIENSTE" ]; then

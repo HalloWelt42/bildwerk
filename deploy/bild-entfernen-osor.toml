@@ -1,0 +1,21 @@
+# Dienst bild-entfernen-osor: markierte Flächen in einem Schritt entfernen mit OSOR auf SDXL-Inpainting, samt Schatten und
+# Spiegelung (ATL-43 des Ateliers, Vergleich der Mittelstufe; Name vorläufig, bis die Messung entscheidet). Rechnet mit
+# PyTorch auf der Grafik des Macs. Je Prozess genau ein Modell; es lädt beim Start, laufen heißt geladen. Der Dienst startet
+# nie von selbst: Starten und Anhalten nur über den Maschinenraum, wenn die Leitstelle es verlangt.
+# installieren.sh legt diese Datei als ~/Maschinenraum/dienste/bild-entfernen-osor.toml an (ordner auf den Klon gesetzt).
+name = "Bild entfernen OSOR (SDXL)"
+beschreibung = "Markierte Flächen in einem Schritt entfernen, samt Schatten und Spiegelung; verzeiht ungenaue Masken (OSOR auf SDXL-Inpainting, PyTorch); Lizenz CreativeML Open RAIL++-M"
+ordner = "~/Entwicklung/Werkzeuge/Bildwerk"
+befehl = [".venv/bin/python", "-m", "bildwerk", "osor-sdxl-entfernen", "--port", "$MASCHINENRAUM_PORT"]
+port = 8799
+pruefadresse = "http://127.0.0.1:8799/gesundheit"
+faehigkeiten = ["bild_erzeugen"]
+eignung = []
+sprachen = []
+# Schätzung bis zur ersten Messung: UNet beim Laden kurz in fp32 (rund 10 GB), dann bf16 mit VAE rund 6 GB
+speicher_gb = 14
+startzeit_s = 120
+anhaltezeit_s = 15
+
+[umgebung]
+HF_HUB_OFFLINE = "1"

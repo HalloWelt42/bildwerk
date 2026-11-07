@@ -47,7 +47,7 @@ SCHRITT_T = 400
 LORA_RANG = 256
 LORA_MODULE = ["to_k", "to_q", "to_v", "to_out.0", "conv", "conv1", "conv2", "conv_shortcut", "proj_in", "proj_out", "ff.net.2", "ff.net.0.proj"]
 #: Arbeitsgröße des Ausschnitts (Kanten im Raster von 16; SDXL rechnet nativ um 1024)
-ARBEIT = 1024
+ARBEIT = 512
 
 RECHENWERK = "torch"
 
@@ -177,7 +177,9 @@ class Motor:
             aus = self.unet(z_in, t, encoder_hidden_states=text, added_cond_kwargs={"text_embeds": gebuendelt, "time_ids": zeiten},
                             return_dict=False)[0].float()
             eps, alpha = aus[:, :4], torch.sigmoid(aus[:, 4:])
-            z_aus = self.ablauf.step(eps.cpu(), int(SCHRITT_T), z.float().cpu()).pred_original_sample.to(wo)
+            # das Ausgangsbild aus einem Schritt (wie DDPMScheduler.step, Vorhersage epsilon), alles auf demselben Gerät
+            a = self.ablauf.alphas_cumprod[SCHRITT_T].to(wo)
+            z_aus = (z.float() - (1 - a).sqrt() * eps) / a.sqrt()
             z_aus = z_aus * alpha + z_lq * (1 - alpha)
             x = ((self.vae.decode(z_aus / self.vae.config.scaling_factor).sample + 1) / 2).clamp(0, 1)
             alpha_gross = F.interpolate(alpha, size=(h, b), mode="bilinear")

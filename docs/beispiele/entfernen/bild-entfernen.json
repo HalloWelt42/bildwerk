@@ -1,0 +1,10 @@
+{
+ "dienst": "bild-entfernen",
+ "name": "Bild entfernen (FLUX.2 klein 4B erase)",
+ "aufgabe": "entfernen",
+ "anweisung": "Remove the marked area.",
+ "dauer_s": 213.89,
+ "bis_antwort_s": 234.95,
+ "schritte": 4,
+ "gerechnet_am": "2026-11-07T16:51:49+00:00"
+}

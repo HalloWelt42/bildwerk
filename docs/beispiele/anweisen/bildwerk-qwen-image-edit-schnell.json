@@ -1,0 +1,10 @@
+{
+ "dienst": "bildwerk-qwen-image-edit-schnell",
+ "name": "Qwen-Image-Edit-2511 schnell",
+ "aufgabe": "anweisen",
+ "anweisung": "Turn the scene into a snowy winter evening with warm light in the windows.",
+ "dauer_s": 403.59,
+ "bis_antwort_s": 403.77,
+ "schritte": 8,
+ "gerechnet_am": "2026-11-07T17:24:05+00:00"
+}

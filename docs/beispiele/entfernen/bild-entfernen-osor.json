@@ -1,0 +1,10 @@
+{
+ "dienst": "bild-entfernen-osor",
+ "name": "Bild entfernen OSOR (SDXL)",
+ "aufgabe": "entfernen",
+ "anweisung": "Remove the marked area.",
+ "dauer_s": 7.54,
+ "bis_antwort_s": 222.27,
+ "schritte": 1,
+ "gerechnet_am": "2026-11-07T16:55:32+00:00"
+}

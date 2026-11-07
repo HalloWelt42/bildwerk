@@ -153,6 +153,15 @@ Probemodus ohne Modell, etwa für einen freien Port:
 
 Er beantwortet `/gesundheit` (`zustand` probe, mit `gewichte_vollstaendig`) und `/v1/models`, lehnt Rechnen mit `503` ab.
 
+Portfolio der Modelle: je Aufgabe ein eigenes Motiv und je Modell, das die Aufgabe kann, sein Ergebnis daran
+(`docs/beispiele/`, beschrieben in `docs/beispiele/beispiele.toml`). Gerechnet wird nur über die Leitstelle; Vorhandenes
+bleibt, mit `--neu` wird es neu gerechnet:
+
+```bash
+LEITSTELLE_ADRESSE=http://leitstelle:8530 .venv/bin/python tools/beispiele.py motive --schluessel-datei <datei>
+LEITSTELLE_ADRESSE=http://leitstelle:8530 .venv/bin/python tools/beispiele.py rechnen --schluessel-datei <datei>
+```
+
 ---
 
 ## Lizenz

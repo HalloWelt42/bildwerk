@@ -1,0 +1,10 @@
+{
+ "dienst": "bild-entfernen-schnell",
+ "name": "Bild entfernen schnell (LaMa)",
+ "aufgabe": "entfernen",
+ "anweisung": "Remove the marked area.",
+ "dauer_s": 5.79,
+ "bis_antwort_s": 10.57,
+ "schritte": 1,
+ "gerechnet_am": "2026-11-07T16:55:42+00:00"
+}

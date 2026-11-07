@@ -1,0 +1,54 @@
+# Portfolio der Bildmodelle (ATL-45 des Ateliers): je Aufgabe ein eigenes Motiv und je Modell, das die Aufgabe kann,
+# sein Ergebnis an genau diesem Motiv. Daraus zeigt die Bildbearbeitung an der Modellwahl und in der Hilfe, wie die
+# Modelle im Vergleich arbeiten.
+#
+# tools/beispiele.py motive    erzeugt fehlende Motive (und Objekte zum Einsetzen) mit dem Motivmodell über die Leitstelle
+# tools/beispiele.py rechnen   rechnet je Aufgabe alle Modelle, die sie laut Steckbrief können, über die Leitstelle
+#
+# Die Markierung steht wie in der Bildbearbeitung deckend in der Signalfarbe aus der Aufgabenvorlage des Modells;
+# Anweisung und Wunsch kommen aus derselben Vorlage. Flächen sind Vielecke in Pixeln des Motivs.
+
+[motive]
+# das Modell für die Motive und seine Einstellungen (Nutzer 07.11.2026: MOSS, 30 Durchläufe, nicht über 1000 Pixel)
+dienst = "bildwerk-moss-image"
+groesse = "960x640"
+schritte = 30
+startwert = 42
+
+[aufgabe.entfernen]
+motiv = """A wooden park bench with cast iron legs stands on a gravel path at the shore of a calm lake at golden hour.
+Reeds and wild flowers along the water, trees on the far shore reflected in the lake, soft warm light, realistic photo,
+35 mm lens, natural colors."""
+wunsch = ""
+# die Bank samt Beinen und etwas Rand
+flaeche = [[356, 374], [562, 196], [660, 192], [948, 178], [950, 220], [930, 484], [770, 476], [660, 604], [436, 580],
+           [426, 448], [356, 410]]
+
+[aufgabe.fuellen]
+motiv = """An empty round wooden table on a sunny stone terrace in front of a whitewashed wall with green shutters,
+a potted olive tree at the side, morning light, realistic photo, natural colors."""
+wunsch = "a ceramic vase with fresh sunflowers"
+# die Tischmitte samt der kleinen Vase des Motivs und Platz darüber, wo die Sonnenblumen hin sollen
+flaeche = [[418, 228], [522, 228], [540, 300], [536, 382], [404, 382], [400, 300]]
+
+[aufgabe.erweitern]
+motiv = """A narrow mountain valley with a winding river, pine forest on both slopes and snowy peaks in the distance,
+clear blue sky with a few clouds, realistic landscape photo, natural colors."""
+wunsch = ""
+# so viele Pixel Rand rundum werden ergänzt (das Motiv wird dafür verkleinert in die Mitte gesetzt)
+rand = 96
+
+[aufgabe.anweisen]
+motiv = """A quiet old town street with cobblestones, a small cafe with chairs outside, flower boxes on the windows,
+bicycles leaning on a wall, daytime in summer, realistic photo, natural colors."""
+wunsch = "Turn the scene into a snowy winter evening with warm light in the windows."
+
+[aufgabe.einpassen]
+motiv = """A cozy living room with a wooden sideboard under a window, soft afternoon light falling from the left,
+plants and books, realistic interior photo, natural colors."""
+wunsch = "the ceramic lamp"
+# ein freigestelltes Objekt, wie aus einem anderen Bild eingesetzt: Motiv auf weißem Grund, dann hier eingefügt
+objekt = """A single ceramic table lamp with a linen shade, isolated on a plain pure white background, product photo,
+even studio lighting."""
+# Kasten im Motiv (links, oben, Breite, Höhe), in den das Objekt eingesetzt wird
+objekt_kasten = [690, 90, 160, 202]                       # rechts auf dem Sideboard, über dem dunklen Gerät

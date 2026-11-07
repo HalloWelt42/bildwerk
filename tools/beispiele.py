@@ -116,8 +116,9 @@ def freistellen(objekt: Image.Image, schwelle: int = 238) -> Image.Image:
 
 def ausgang(aufgabe: str, a: dict, motiv: Image.Image) -> Image.Image | None:
     """Das Ausgangsbild, mit dem ein Nutzer beginnt, wenn es sich von der Vorlage unterscheidet: das Motiv vor der
-    Markierung; beim Erweitern das kleinere Bild ohne den neuen Rand. Bei Anweisung und Einpassen ist es die Vorlage."""
-    if aufgabe in ("entfernen", "fuellen"):
+    Markierung; beim Einpassen das Zimmer, bevor das Objekt eingesetzt ist; beim Erweitern das kleinere Bild ohne den
+    neuen Rand. Bei der Anweisung ist es die Vorlage selbst."""
+    if aufgabe in ("entfernen", "fuellen", "einpassen"):
         return motiv.copy()
     if aufgabe == "erweitern":
         r = int(a["rand"])

@@ -1,0 +1,27 @@
+{
+ "dienst": "bildwerk-moss-image",
+ "modell": "moss-image",
+ "gemessen_am": "2026-11-07T19:34:09+00:00",
+ "bits": {
+  "8": {
+   "dauer_s": {
+    "entfernen": 526.82
+   },
+   "spitze_gb": 17.71,
+   "ablage_gb": 14.0
+  },
+  "4": {
+   "dauer_s": {
+    "entfernen": 509.09
+   },
+   "spitze_gb": 17.71,
+   "ablage_gb": 7.5
+  }
+ },
+ "abweichung_4_zu_8": {
+  "entfernen": {
+   "mittel": 40.51,
+   "psnr_db": 13.6
+  }
+ }
+}

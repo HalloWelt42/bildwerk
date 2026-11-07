@@ -121,7 +121,7 @@ def main() -> int:
                 time.sleep(WARTEN_NACH_UMSTELLEN_S)
                 entladen(verwaltung, a.dienst)
                 # die Speicherspitze je Lauf: der Maschinenraum hält sonst den Höchstwert über alle Läufe
-                httpx.post(f"{MASCHINENRAUM}/api/dienste/{a.dienst}/spitzen_verwerfen", timeout=10)
+                httpx.post(f"{MASCHINENRAUM}/api/dienste/{a.dienst}/spitzen_verwerfen", headers={"X-Maschinenraum": "1"}, timeout=10).raise_for_status()
                 ausgabe = ZIEL / a.dienst / f"{bits}bit"
                 dauern = {}
                 if bearbeitet:

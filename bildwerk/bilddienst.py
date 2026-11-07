@@ -31,6 +31,7 @@ from pydantic import ValidationError
 from .bildformat import (SEED_GRENZE, Bearbeitungsanfrage, Bildanfrage, Bildantwort, Bildauftrag, Bilddaten, Bildzusatz, Modelleintrag,
                          Modellangaben, Modellliste, Quelle, Rechenwerk, Steckbrief)
 from .gewichte import Gewichtsstand, Pruefliste
+from .beispiele import mit_beispielen
 from .modelle import dienstkennung
 from .unterbau import Einstellungen, Rechner, anwendung, verbindung_beobachten
 
@@ -148,9 +149,12 @@ def erstellen(dienst: str, motor: Motor, einstellungen: Einstellungen | None = N
     q = getattr(motor, "quantisierung", e.quantisierung)
     genauigkeit = q.value if hasattr(q, "value") else str(q)
 
+    # je Aufgabe ein Beispiel aus dem Portfolio (ATL-45), einmal beim Start verkleinert
+    aufgaben = mit_beispielen(a.aufgaben, dienstkennung(a.kennung))
+
     @app.get("/v1/models", response_model=Modellliste)
     async def modelle() -> Modellliste:
-        steckbrief = Steckbrief(**a.model_dump(), quelle=Quelle(repo=motor.pruefliste.repo, revision=motor.pruefliste.revision),
+        steckbrief = Steckbrief(**(a.model_dump() | {"aufgaben": aufgaben}), quelle=Quelle(repo=motor.pruefliste.repo, revision=motor.pruefliste.revision),
                                 quantisierung=genauigkeit, rechenwerk=motor.rechenwerk() if hasattr(motor, "rechenwerk") else rechenwerk(),
                                 zustand=rechner.zustand.value)
         return Modellliste(data=[Modelleintrag(id=a.kennung, created=erschienen, steckbrief=steckbrief)])

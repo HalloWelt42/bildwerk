@@ -71,7 +71,7 @@ def test_steckbrief_nennt_aufgabenvorlagen():
     with TestClient(erstellen("qwen-image-edit", ScheinMotor(), Einstellungen())) as c:
         a = c.get("/v1/models").json()["data"][0]["steckbrief"]["aufgaben"]
     assert set(a) == {"anweisen", "entfernen", "fuellen", "erweitern", "einpassen"}
-    assert a["anweisen"] == {"anweisung": "{wunsch}", "ohne_wunsch": None, "sprache": "en", "signalfarbe": None}
+    assert a["anweisen"] == {"anweisung": "{wunsch}", "ohne_wunsch": None, "sprache": "en", "signalfarbe": None, "beispiel": None}
     assert "{wunsch}" not in a["entfernen"]["anweisung"] and a["entfernen"]["signalfarbe"] == [255, 0, 255]
     assert "{wunsch}" in a["fuellen"]["anweisung"] and "{wunsch}" not in a["fuellen"]["ohne_wunsch"]
     assert "border" in a["erweitern"]["anweisung"] and not a["erweitern"]["anweisung"].count("\\")

@@ -155,7 +155,8 @@ Er beantwortet `/gesundheit` (`zustand` probe, mit `gewichte_vollstaendig`) und 
 
 Portfolio der Modelle: je Aufgabe ein eigenes Motiv und je Modell, das die Aufgabe kann, sein Ergebnis daran
 (`docs/beispiele/`, beschrieben in `docs/beispiele/beispiele.toml`). Gerechnet wird nur über die Leitstelle; Vorhandenes
-bleibt, mit `--neu` wird es neu gerechnet:
+bleibt, mit `--neu` wird es neu gerechnet. Jeder Dienst liefert daraus je Aufgabe ein kleines Beispiel im Steckbrief
+(`aufgaben.<aufgabe>.beispiel`: Motiv, Vorher und Nachher als WebP-data-URL höchstens 384 x 256, Dauer im Dienst):
 
 ```bash
 LEITSTELLE_ADRESSE=http://leitstelle:8530 .venv/bin/python tools/beispiele.py motive --schluessel-datei <datei>

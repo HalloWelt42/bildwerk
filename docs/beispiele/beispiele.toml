@@ -16,6 +16,7 @@ schritte = 30
 startwert = 42
 
 [aufgabe.entfernen]
+titel = "Bank am See"
 motiv = """A wooden park bench with cast iron legs stands on a gravel path at the shore of a calm lake at golden hour.
 Reeds and wild flowers along the water, trees on the far shore reflected in the lake, soft warm light, realistic photo,
 35 mm lens, natural colors."""
@@ -25,6 +26,7 @@ flaeche = [[356, 374], [562, 196], [660, 192], [948, 178], [950, 220], [930, 484
            [426, 448], [356, 410]]
 
 [aufgabe.fuellen]
+titel = "Tisch auf der Terrasse"
 motiv = """An empty round wooden table on a sunny stone terrace in front of a whitewashed wall with green shutters,
 a potted olive tree at the side, morning light, realistic photo, natural colors."""
 wunsch = "a ceramic vase with fresh sunflowers"
@@ -32,6 +34,7 @@ wunsch = "a ceramic vase with fresh sunflowers"
 flaeche = [[418, 228], [522, 228], [540, 300], [536, 382], [404, 382], [400, 300]]
 
 [aufgabe.erweitern]
+titel = "Bergtal"
 motiv = """A narrow mountain valley with a winding river, pine forest on both slopes and snowy peaks in the distance,
 clear blue sky with a few clouds, realistic landscape photo, natural colors."""
 wunsch = ""
@@ -39,11 +42,13 @@ wunsch = ""
 rand = 96
 
 [aufgabe.anweisen]
+titel = "Altstadtgasse im Winter"
 motiv = """A quiet old town street with cobblestones, a small cafe with chairs outside, flower boxes on the windows,
 bicycles leaning on a wall, daytime in summer, realistic photo, natural colors."""
 wunsch = "Turn the scene into a snowy winter evening with warm light in the windows."
 
 [aufgabe.einpassen]
+titel = "Lampe im Wohnzimmer"
 motiv = """A cozy living room with a wooden sideboard under a window, soft afternoon light falling from the left,
 plants and books, realistic interior photo, natural colors."""
 wunsch = "the ceramic lamp"

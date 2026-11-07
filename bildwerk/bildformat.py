@@ -67,6 +67,18 @@ class Aufgabe(str, Enum):
 WUNSCH = "{wunsch}"
 
 
+class Beispiel(BaseModel):
+    """Was das Modell an einem festen Motiv aus dem Portfolio macht (ATL-45 des Ateliers): Vorher (was es sah, markiert
+    wie in der Bildbearbeitung) und Nachher als kleine Bilder (data-URL), dazu die Dauer im Dienst beim Rechnen."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    motiv: str = Field(default="", description="kurzer Titel des Motivs, etwa: Bank am See")
+    vorher: str = Field(pattern=r"^data:image/", description="was das Modell sah, als data-URL")
+    nachher: str = Field(pattern=r"^data:image/", description="sein Ergebnis, als data-URL")
+    dauer_s: float | None = Field(default=None, description="Dauer im Dienst beim Rechnen des Portfolios")
+
+
 class Aufgabenvorlage(BaseModel):
     """Wie das Modell eine Aufgabe als Anweisung bekommt (ATL-26 des Ateliers): fester Text in der Sprache, die das Modell
     befolgt, mit dem Platzhalter `{wunsch}` für die Worte des Nutzers (übersetzt in `sprache`). Die Fläche, die die
@@ -79,6 +91,7 @@ class Aufgabenvorlage(BaseModel):
                                                                "(steht kein {wunsch} in der Anweisung, nimmt sie keinen)")
     sprache: str = Field(pattern=r"^[a-z]{2}$", description="ISO 639-1; in diese Sprache wird der Wunsch übersetzt")
     signalfarbe: tuple[int, int, int] | None = Field(default=None, description="RGB der markierten Fläche; ohne: die Aufgabe markiert nichts")
+    beispiel: Beispiel | None = Field(default=None, description="Vorher und Nachher an einem Motiv des Portfolios, zum Vergleichen")
 
     @field_validator("signalfarbe")
     @classmethod

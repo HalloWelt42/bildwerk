@@ -164,8 +164,10 @@ def anweisung(vorlage_des_modells: dict, wunsch: str) -> str:
     return vorlage_des_modells.get("ohne_wunsch") or vorlage_des_modells["anweisung"]
 
 
-def rechnen(c: httpx.Client, b: dict, nur: str | None, neu: bool) -> None:
-    dienste = [d for d in c.get("/v1/dienste").json()["data"] if "bild_bearbeiten" in d.get("faehigkeiten", [])]
+def rechnen(c: httpx.Client, b: dict, nur: str | None, neu: bool, dienst: str | None = None, ausgabe: Path | None = None) -> None:
+    """Je Aufgabe alle Dienste, die sie können (oder nur `dienst`); Ergebnisse nach `ausgabe` (Vorgabe: das Portfolio)."""
+    dienste = [d for d in c.get("/v1/dienste").json()["data"] if "bild_bearbeiten" in d.get("faehigkeiten", [])
+               and (dienst is None or d["kennung"] == dienst)]
     for aufgabe, a in b["aufgabe"].items():
         if nur and aufgabe != nur:
             continue
@@ -175,7 +177,7 @@ def rechnen(c: httpx.Client, b: dict, nur: str | None, neu: bool) -> None:
             v_modell = ((d.get("bild") or {}).get("aufgaben") or {}).get(aufgabe)
             if not v_modell:
                 continue
-            ziel = ORDNER / aufgabe / f"{d['kennung']}.webp"
+            ziel = (ausgabe or ORDNER) / aufgabe / f"{d['kennung']}.webp"
             if ziel.exists() and not neu:
                 continue
             ziel.parent.mkdir(parents=True, exist_ok=True)
@@ -203,6 +205,8 @@ def main() -> int:
     p.add_argument("--schluessel-datei", required=True, type=Path)
     p.add_argument("--aufgabe", help="nur diese Aufgabe rechnen")
     p.add_argument("--neu", action="store_true", help="Vorhandenes neu erzeugen")
+    p.add_argument("--dienst", help="nur diesen Dienst rechnen (etwa für Messreihen, MR-5)")
+    p.add_argument("--ausgabe", type=Path, help="Ergebnisse hierhin statt ins Portfolio (Ordner je Aufgabe)")
     a = p.parse_args()
     adresse = os.environ.get("LEITSTELLE_ADRESSE")
     if not adresse:
@@ -210,7 +214,7 @@ def main() -> int:
     b = lesen()
     schluessel = a.schluessel_datei.expanduser().read_text().strip()
     with httpx.Client(base_url=adresse, headers={"Authorization": f"Bearer {schluessel}"}, timeout=httpx.Timeout(3600, connect=10)) as c:
-        motive(c, b, a.neu) if a.befehl == "motive" else rechnen(c, b, a.aufgabe, a.neu)
+        motive(c, b, a.neu) if a.befehl == "motive" else rechnen(c, b, a.aufgabe, a.neu, a.dienst, a.ausgabe)
     return 0
 
 

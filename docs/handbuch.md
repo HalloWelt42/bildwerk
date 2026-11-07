@@ -4,13 +4,13 @@ geraet: [mac]
 abhaengigkeiten: [maschinenraum]
 daten:
   - "Mac: die Gewichte in der Modellablage `~/Maschinenraum/modelle/huggingface` (MOSS-Image-SFT, 27,2 GB; FLUX.2 klein 9B, 34,7 GB) und die eigene 8-Bit-Ablage von Qwen-Image-Edit-2511 in `~/Maschinenraum/modelle/bild/mflux/qwen-image-edit-2511-8bit`; LaMa für schnelles Entfernen übersetzt in `~/Maschinenraum/modelle/bild/coreml/lama-big-800.mlmodelc` (207 MB); FLUX.2 klein 4B (16 GB) und das LoRA erase-v1 (0,2 GB) für bild-entfernen in der Modellablage"
-  - "Mac: Dienstdateien `~/Maschinenraum/dienste/bildwerk-*.toml` , `bild-entfernen-schnell.toml`, `bild-entfernen.toml`, `bild-entfernen-osor.toml` und `bild-fuellen.toml` (je Modell eine)"
+  - "Mac: Dienstdateien `~/Maschinenraum/dienste/bildwerk-*.toml` , `bild-entfernen-schnell.toml`, `bild-entfernen.toml`, `bild-entfernen-osor.toml`, `bild-fuellen.toml` und `bild-erzeugen.toml` (je Modell eine)"
 sicherung:
   - "nichts Eigenes zu sichern: die Dienstdateien schreibt die Installation neu, die Gewichte lassen sich neu laden; die Modellablage gehört zur Sicherung des Macs (siehe Grundlage Mac)"
   - "das Repo liegt bisher nur auf dem Mac (keine entfernte Ablage): der Ordner gehört zur Sicherung des Macs"
 schluessel_orte: []
 einrichten: einrichten.sh
-stand: a5176dd
+stand: 397c39f
 ---
 
 # Bildwerk
@@ -32,6 +32,7 @@ verlangt; sie entscheidet über Laden, Entladen und Vorrang, und Apps (auch der 
 | bild-entfernen | bild_erzeugen | FLUX.2 klein 4B mit dem LoRA erase-v1 (beides Apache-2.0, frei nutzbar) über mflux: entfernt markierte Flächen samt Schatten und Spiegelung in einigen Sekunden; Mittelstufe zwischen LaMa und Qwen; genau eine Vorlage mit der Fläche in der Signalfarbe |
 | bild-entfernen-osor | bild_erzeugen | OSOR auf SDXL-Inpainting (Lizenz CreativeML Open RAIL++-M: kommerziell mit Nutzungsauflagen) in PyTorch: entfernt in einem Schritt samt Schatten und Spiegelung; Vergleich der Mittelstufe, Name vorläufig; genau eine Vorlage mit der Fläche in der Signalfarbe |
 | bild-fuellen | bild_erzeugen | Qwen-Image 2.1 Turbo mit ControlNet-Union (Qwen Research License: nur nicht-kommerziell) über mflux: füllt die markierte Fläche nach Anweisung mit echter Maske, außerhalb bleibt alles; Entfernen und Füllen |
+| bild-erzeugen | bild_erzeugen | FLUX 3 Image Klein (FLUX Kommunity License: nicht-kommerziell frei, kommerziell unter 5 Mio. US-Dollar Jahresumsatz) über mflux: Bilder aus Text in 16 Schritten; Bearbeiten zurückgestellt |
 
 Sichtbar heißt der Dienst nach seinem Modell ("MOSS-Image", `name` der Dienstdatei); Maschinenraum, Leitstelle und
 Apps setzen die Aufgabe klein dahinter ("MOSS-Image · Bilderzeugung"). Die Kennung `bildwerk-moss-image` bleibt.
@@ -68,7 +69,7 @@ wenn es sie noch nicht gibt (Änderungen von Hand bleiben). Gestartet und gelade
 
 Probe: `ls ~/Maschinenraum/dienste/bildwerk-*.toml ~/Maschinenraum/dienste/bild-entfernen*.toml` nennt
 `bildwerk-moss-image.toml`, `bildwerk-flux2-klein.toml`, `bildwerk-qwen-image-edit.toml`,
-`bildwerk-qwen-image-edit-schnell.toml`, `bild-entfernen-schnell.toml`, `bild-entfernen.toml`, `bild-entfernen-osor.toml` und `bild-fuellen.toml`, und der Maschinenraum zeigt die Dienste unter
+`bildwerk-qwen-image-edit-schnell.toml`, `bild-entfernen-schnell.toml`, `bild-entfernen.toml`, `bild-entfernen-osor.toml`, `bild-fuellen.toml` und `bild-erzeugen.toml`, und der Maschinenraum zeigt die Dienste unter
 Dienste als aus.
 
 ### 2. Gewichte
@@ -103,7 +104,8 @@ Daraus baut `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk
 der Dienst lädt nur daraus. bild-fuellen ebenso: `bildwerk gewichte qwen21-fuellen --laden` (Qwen-Image 2.1 Turbo 32,5 GB und
 ControlNet 7,6 GB), dann `bildwerk umwandeln qwen21-fuellen` (`bild/mflux/qwen-image-2.1-turbo-fuellen-8bit`). Die Originale
 bleiben liegen, bis Quellen und Duplikate gemeinsam abgeräumt werden (MR-4). MOSS-Image ebenso: `bildwerk umwandeln moss-image`
-(`bild/mflux/moss-image-sft-8bit`, 14 GB statt 27 GB). Die eigenen Ablagen gibt es je Bitbreite (`--bits 4` oder `8`,
+(`bild/mflux/moss-image-sft-8bit`, 14 GB statt 27 GB). FLUX 3 Image Klein (bild-erzeugen): erst auf Hugging Face der Lizenz zustimmen (Konto
+des Macs), dann `bildwerk gewichte flux3-klein --laden` (20,3 GB) und `bildwerk umwandeln flux3-klein`. Die eigenen Ablagen gibt es je Bitbreite (`--bits 4` oder `8`,
 Ordner `...-4bit` bzw. `...-8bit`); welche ein Dienst lädt, sagt `BILDWERK_QUANTISIERUNG` in seiner Dienstdatei (MR-5).
 bild-entfernen-osor ebenso SDXL-Inpainting 0.1 (fp16, 6,9 GB) und OSOR-SDXL Phase II (3,1 GB):
 `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte osor-sdxl-entfernen --laden`.

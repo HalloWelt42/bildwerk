@@ -1,0 +1,22 @@
+# Dienst bild-erzeugen: Bilder aus Text mit FLUX 3 Image Klein über mflux, 16 Schritte (ATL-47 des Ateliers); Bearbeiten
+# nach Vorlage ist zurückgestellt. Benannt nach der Fähigkeit (HELF-189). Je Prozess genau ein Modell; es lädt beim
+# Start, laufen heißt geladen. Der Dienst startet nie von selbst: Starten und Anhalten nur über den Maschinenraum, wenn
+# die Leitstelle es verlangt.
+# installieren.sh legt diese Datei als ~/Maschinenraum/dienste/bild-erzeugen.toml an (ordner auf den Klon gesetzt).
+name = "Bild erzeugen (FLUX 3 Image Klein)"
+beschreibung = "Bilder aus Text in 16 Schritten, auch mit Schrift im Bild (FLUX 3 Image Klein, 5,6 Mrd. Parameter); nicht-kommerziell frei, kommerziell nur unter 5 Mio. US-Dollar Jahresumsatz"
+ordner = "~/Entwicklung/Werkzeuge/Bildwerk"
+befehl = [".venv/bin/python", "-m", "bildwerk", "flux3-klein", "--port", "$MASCHINENRAUM_PORT"]
+port = 8803
+pruefadresse = "http://127.0.0.1:8803/gesundheit"
+faehigkeiten = ["bild_erzeugen"]
+eignung = []
+sprachen = ["en"]
+# Schätzung bis zur ersten Messung: laut mflux Spitze 22,8 GB mit 8 Bit bei 1024 x 1024
+speicher_gb = 24
+startzeit_s = 120
+anhaltezeit_s = 15
+
+[umgebung]
+HF_HUB_OFFLINE = "1"
+BILDWERK_QUANTISIERUNG = "8bit"

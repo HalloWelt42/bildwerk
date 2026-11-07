@@ -29,7 +29,7 @@ from ..entfernen import ausschnitt, maske_aus_signalfarbe, zurueckmischen
 from ..gewichte import Gewichtsstand, Pruefliste, ablage, pruefen
 from ..unterbau import Abgebrochen, Einstellungen, GewichteFehlen
 
-PORT = 8799
+PORT = 8801
 DIENST = "bild-entfernen-osor"
 #: das Grundmodell SDXL-Inpainting 0.1 (fp16-Fassung) und, als Zusatz, die Gewichte von OSOR-SDXL (Phase II)
 PRUEFLISTE = Path(__file__).with_name("osor_sdxl_entfernen.json")

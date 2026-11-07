@@ -61,6 +61,7 @@ class Aufgabe(str, Enum):
     ENTFERNEN = "entfernen"      # die markierte Fläche verschwindet, die Szene geht dahinter weiter
     FUELLEN = "fuellen"          # die markierte Fläche füllen, mit dem Wunsch oder passend zur Umgebung
     ERWEITERN = "erweitern"      # der markierte Rand um das Bild wird ergänzt
+    EINPASSEN = "einpassen"      # eingefügte Objekte an Licht, Farbe, Schatten und Kanten der Szene angleichen
 
 
 WUNSCH = "{wunsch}"

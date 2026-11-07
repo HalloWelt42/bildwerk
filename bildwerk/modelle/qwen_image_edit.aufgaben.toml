@@ -32,3 +32,16 @@ light, perspective, texture and grain). Keep everything outside it exactly as it
 result."""
 sprache = "en"
 signalfarbe = [255, 0, 255]
+
+# Einpassen (Atelier ATL-13, Einsetzen): Objekte wurden in das Foto kopiert und sollen dazugehören. Es gibt keine
+# Signalfarbe, das Objekt bleibt sichtbar; das Atelier übernimmt nur die Umgebung der eingefügten Objekte.
+[einpassen]
+anweisung = """Some objects were pasted into this photo and do not fit in yet. The pasted object is: {wunsch}. Make every \
+pasted object look like a natural part of the scene: match the lighting direction, colour, contrast, sharpness and grain, \
+add fitting shadows and contact with the surface it stands on, and blend its edges. Keep its shape, position and size. \
+Do not add, remove or move anything else, and keep the rest of the image exactly as it is."""
+ohne_wunsch = """Some objects were pasted into this photo and do not fit in yet. Make every pasted object look like a \
+natural part of the scene: match the lighting direction, colour, contrast, sharpness and grain, add fitting shadows and \
+contact with the surface it stands on, and blend its edges. Keep its shape, position and size. Do not add, remove or move \
+anything else, and keep the rest of the image exactly as it is."""
+sprache = "en"

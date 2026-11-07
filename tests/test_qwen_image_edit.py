@@ -70,11 +70,13 @@ def test_steckbrief_nennt_aufgabenvorlagen():
     """ATL-26: je Aufgabe die Anweisung mit Platzhalter, Sprache und Signalfarbe, aus der TOML-Datei des Modells."""
     with TestClient(erstellen("qwen-image-edit", ScheinMotor(), Einstellungen())) as c:
         a = c.get("/v1/models").json()["data"][0]["steckbrief"]["aufgaben"]
-    assert set(a) == {"anweisen", "entfernen", "fuellen", "erweitern"}
+    assert set(a) == {"anweisen", "entfernen", "fuellen", "erweitern", "einpassen"}
     assert a["anweisen"] == {"anweisung": "{wunsch}", "ohne_wunsch": None, "sprache": "en", "signalfarbe": None}
     assert "{wunsch}" not in a["entfernen"]["anweisung"] and a["entfernen"]["signalfarbe"] == [255, 0, 255]
     assert "{wunsch}" in a["fuellen"]["anweisung"] and "{wunsch}" not in a["fuellen"]["ohne_wunsch"]
     assert "border" in a["erweitern"]["anweisung"] and not a["erweitern"]["anweisung"].count("\\")
+    # Einpassen (Atelier ATL-13): ohne Signalfarbe, das Objekt bleibt sichtbar; der Wunsch nennt es
+    assert a["einpassen"]["signalfarbe"] is None and "{wunsch}" in a["einpassen"]["anweisung"] and "pasted" in a["einpassen"]["ohne_wunsch"]
 
 
 def test_aufgabenvorlage_prueft_platzhalter_und_farbe(tmp_path):

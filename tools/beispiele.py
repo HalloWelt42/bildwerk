@@ -6,7 +6,8 @@ wird, steht in docs/beispiele/beispiele.toml.
         --schluessel-datei ~/.config/leitstelle/<anwendung>.schluessel
     LEITSTELLE_ADRESSE=... .venv/bin/python tools/beispiele.py rechnen --schluessel-datei ... [--aufgabe entfernen] [--neu]
 
-Ablage: docs/beispiele/motive/<aufgabe>.png (Motiv), docs/beispiele/vorlagen/<aufgabe>.webp (was die Modelle sehen,
+Ablage: docs/beispiele/motive/<aufgabe>.png (Motiv), docs/beispiele/ausgang/<aufgabe>.webp (Ausgangsbild vor der
+Markierung, wo es sich von der Vorlage unterscheidet), docs/beispiele/vorlagen/<aufgabe>.webp (was die Modelle sehen,
 markiert wie in der Bildbearbeitung) und docs/beispiele/<aufgabe>/<dienst>.webp mit <dienst>.json (Dauer, Anweisung).
 Vorhandenes bleibt, außer mit --neu.
 """
@@ -113,6 +114,27 @@ def freistellen(objekt: Image.Image, schwelle: int = 238) -> Image.Image:
     return rgba.crop(rgba.getbbox()) if rgba.getbbox() else rgba
 
 
+def ausgang(aufgabe: str, a: dict, motiv: Image.Image) -> Image.Image | None:
+    """Das Ausgangsbild, mit dem ein Nutzer beginnt, wenn es sich von der Vorlage unterscheidet: das Motiv vor der
+    Markierung; beim Erweitern das kleinere Bild ohne den neuen Rand. Bei Anweisung und Einpassen ist es die Vorlage."""
+    if aufgabe in ("entfernen", "fuellen"):
+        return motiv.copy()
+    if aufgabe == "erweitern":
+        r = int(a["rand"])
+        return motiv.resize((motiv.width - 2 * r, motiv.height - 2 * r), Image.LANCZOS)
+    return None
+
+
+def ablegen(aufgabe: str, a: dict, motiv: Image.Image, farbe: tuple[int, int, int]) -> Image.Image:
+    """Vorlage und (wo es sich unterscheidet) Ausgangsbild der Aufgabe ablegen; liefert die Vorlage."""
+    v = vorlage(aufgabe, a, motiv, farbe)
+    for art, bild in (("vorlagen", v), ("ausgang", ausgang(aufgabe, a, motiv))):
+        if bild is not None:
+            (ORDNER / art).mkdir(exist_ok=True)
+            bild.save(ORDNER / art / f"{aufgabe}.webp", quality=90)
+    return v
+
+
 def vorlage(aufgabe: str, a: dict, motiv: Image.Image, farbe: tuple[int, int, int]) -> Image.Image:
     """Was das Modell sieht, wie die Bildbearbeitung es schickt."""
     v = motiv.copy()
@@ -147,6 +169,7 @@ def rechnen(c: httpx.Client, b: dict, nur: str | None, neu: bool) -> None:
         if nur and aufgabe != nur:
             continue
         motiv = Image.open(ORDNER / "motive" / f"{aufgabe}.png").convert("RGB")
+        ablegen(aufgabe, a, motiv, SIGNAL)                    # auch ohne neue Läufe: Ausgangsbild und Vorlage aktuell
         for d in dienste:
             v_modell = ((d.get("bild") or {}).get("aufgaben") or {}).get(aufgabe)
             if not v_modell:
@@ -155,10 +178,7 @@ def rechnen(c: httpx.Client, b: dict, nur: str | None, neu: bool) -> None:
             if ziel.exists() and not neu:
                 continue
             ziel.parent.mkdir(parents=True, exist_ok=True)
-            farbe = tuple(v_modell.get("signalfarbe") or SIGNAL)
-            v = vorlage(aufgabe, a, motiv, farbe)
-            (ORDNER / "vorlagen").mkdir(exist_ok=True)
-            v.save(ORDNER / "vorlagen" / f"{aufgabe}.webp", quality=90)
+            v = ablegen(aufgabe, a, motiv, tuple(v_modell.get("signalfarbe") or SIGNAL))
             text = anweisung(v_modell, a.get("wunsch", ""))
             beginn = time.monotonic()
             r = senden(c, {"model": d["kennung"], "prompt": text, "size": b["motive"]["groesse"], "seed": 1,

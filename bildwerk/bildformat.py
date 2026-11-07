@@ -68,12 +68,15 @@ WUNSCH = "{wunsch}"
 
 
 class Beispiel(BaseModel):
-    """Was das Modell an einem festen Motiv aus dem Portfolio macht (ATL-45 des Ateliers): Vorher (was es sah, markiert
-    wie in der Bildbearbeitung) und Nachher als kleine Bilder (data-URL), dazu die Dauer im Dienst beim Rechnen."""
+    """Was das Modell an einem festen Motiv aus dem Portfolio macht (ATL-45 des Ateliers): Ausgangsbild (wie der Nutzer
+    beginnt, wo es sich von der Vorlage unterscheidet), Vorher (was es sah, markiert wie in der Bildbearbeitung) und
+    Nachher als kleine Bilder (data-URL), dazu die Dauer im Dienst beim Rechnen."""
 
     model_config = ConfigDict(extra="forbid")
 
     motiv: str = Field(default="", description="kurzer Titel des Motivs, etwa: Bank am See")
+    ausgang: str | None = Field(default=None, pattern=r"^data:image/",
+                                description="das Ausgangsbild vor der Markierung, wo es sich von der Vorlage unterscheidet")
     vorher: str = Field(pattern=r"^data:image/", description="was das Modell sah, als data-URL")
     nachher: str = Field(pattern=r"^data:image/", description="sein Ergebnis, als data-URL")
     dauer_s: float | None = Field(default=None, description="Dauer im Dienst beim Rechnen des Portfolios")

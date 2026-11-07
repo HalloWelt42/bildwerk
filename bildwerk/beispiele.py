@@ -2,8 +2,9 @@
 eine Anwendung die Modelle bei der Wahl vergleichen kann. Das Portfolio rechnet tools/beispiele.py über die Leitstelle
 (docs/beispiele); hier werden daraus kleine Bilder für den Steckbrief.
 
-Klein heißt: höchstens BREITE x HOEHE als WebP, als data-URL im Steckbrief; je Aufgabe Vorher (was das Modell sah,
-markiert wie in der Bildbearbeitung) und Nachher (sein Ergebnis) und die Dauer im Dienst beim Rechnen des Portfolios.
+Klein heißt: höchstens BREITE x HOEHE als WebP, als data-URL im Steckbrief; je Aufgabe das Ausgangsbild (wo es sich von
+der Vorlage unterscheidet), Vorher (was das Modell sah, markiert wie in der Bildbearbeitung) und Nachher (sein Ergebnis)
+und die Dauer im Dienst beim Rechnen des Portfolios.
 """
 
 from __future__ import annotations
@@ -51,7 +52,9 @@ def beispiel(aufgabe: Aufgabe, dienst: str, ordner: Path = ORDNER) -> Beispiel |
         dauer = json.loads(angaben.read_text(encoding="utf-8")).get("dauer_s")
     except (OSError, ValueError):
         dauer = None
-    return Beispiel(motiv=motivtitel(ordner).get(aufgabe.value, ""), vorher=data_url(vorher), nachher=data_url(nachher), dauer_s=dauer)
+    ausgang = ordner / "ausgang" / f"{aufgabe.value}.webp"
+    return Beispiel(motiv=motivtitel(ordner).get(aufgabe.value, ""), ausgang=data_url(ausgang) if ausgang.is_file() else None,
+                    vorher=data_url(vorher), nachher=data_url(nachher), dauer_s=dauer)
 
 
 def mit_beispielen(aufgaben: dict[Aufgabe, Aufgabenvorlage], dienst: str, ordner: Path = ORDNER) -> dict[Aufgabe, Aufgabenvorlage]:

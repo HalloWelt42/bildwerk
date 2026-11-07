@@ -1,0 +1,22 @@
+# Dienst bild-fuellen: markierte Flächen nach Anweisung neu füllen oder entfernen, mit echter Maske (Qwen-Image 2.1 Turbo
+# und ControlNet-Union, ATL-47 des Ateliers); außerhalb der Markierung bleibt alles. Benannt nach der Fähigkeit (HELF-189).
+# Je Prozess genau ein Modell; es lädt beim Start, laufen heißt geladen. Der Dienst startet nie von selbst: Starten und
+# Anhalten nur über den Maschinenraum, wenn die Leitstelle es verlangt.
+# installieren.sh legt diese Datei als ~/Maschinenraum/dienste/bild-fuellen.toml an (ordner auf den Klon gesetzt).
+name = "Bild füllen (Qwen-Image 2.1 Turbo mit Maske)"
+beschreibung = "Markierte Flächen nach Anweisung neu füllen oder entfernen, außerhalb der Markierung bleibt alles (Qwen-Image 2.1 Turbo mit ControlNet, 8 Schritte); nur nicht-kommerziell"
+ordner = "~/Entwicklung/Werkzeuge/Bildwerk"
+befehl = [".venv/bin/python", "-m", "bildwerk", "qwen21-fuellen", "--port", "$MASCHINENRAUM_PORT"]
+port = 8802
+pruefadresse = "http://127.0.0.1:8802/gesundheit"
+faehigkeiten = ["bild_erzeugen"]
+eignung = []
+sprachen = ["en", "zh"]
+# Schätzung bis zur ersten Messung: laut mflux Spitze 27 GB mit 8 Bit bei 1024 x 1024
+speicher_gb = 30
+startzeit_s = 300
+anhaltezeit_s = 15
+
+[umgebung]
+HF_HUB_OFFLINE = "1"
+BILDWERK_QUANTISIERUNG = "8bit"

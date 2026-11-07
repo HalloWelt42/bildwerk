@@ -4,13 +4,13 @@ geraet: [mac]
 abhaengigkeiten: [maschinenraum]
 daten:
   - "Mac: die Gewichte in der Modellablage `~/Maschinenraum/modelle/huggingface` (MOSS-Image-SFT, 27,2 GB; FLUX.2 klein 9B, 34,7 GB) und die eigene 8-Bit-Ablage von Qwen-Image-Edit-2511 in `~/Maschinenraum/modelle/bild/mflux/qwen-image-edit-2511-8bit`; LaMa für schnelles Entfernen übersetzt in `~/Maschinenraum/modelle/bild/coreml/lama-big-800.mlmodelc` (207 MB); FLUX.2 klein 4B (16 GB) und das LoRA erase-v1 (0,2 GB) für bild-entfernen in der Modellablage"
-  - "Mac: Dienstdateien `~/Maschinenraum/dienste/bildwerk-*.toml` , `bild-entfernen-schnell.toml`, `bild-entfernen.toml` und `bild-entfernen-osor.toml` (je Modell eine)"
+  - "Mac: Dienstdateien `~/Maschinenraum/dienste/bildwerk-*.toml` , `bild-entfernen-schnell.toml`, `bild-entfernen.toml`, `bild-entfernen-osor.toml` und `bild-fuellen.toml` (je Modell eine)"
 sicherung:
   - "nichts Eigenes zu sichern: die Dienstdateien schreibt die Installation neu, die Gewichte lassen sich neu laden; die Modellablage gehört zur Sicherung des Macs (siehe Grundlage Mac)"
   - "das Repo liegt bisher nur auf dem Mac (keine entfernte Ablage): der Ordner gehört zur Sicherung des Macs"
 schluessel_orte: []
 einrichten: einrichten.sh
-stand: 1488587
+stand: 471f341
 ---
 
 # Bildwerk
@@ -31,6 +31,7 @@ verlangt; sie entscheidet über Laden, Entladen und Vorrang, und Apps (auch der 
 | bild-entfernen-schnell | bild_erzeugen | LaMa big (Apache-2.0, frei nutzbar) als Core-ML-Paket über coremltools: entfernt markierte Flächen in 0,3 bis 0,4 s, erfindet nichts Neues; genau eine Vorlage mit der Fläche in der Signalfarbe |
 | bild-entfernen | bild_erzeugen | FLUX.2 klein 4B mit dem LoRA erase-v1 (beides Apache-2.0, frei nutzbar) über mflux: entfernt markierte Flächen samt Schatten und Spiegelung in einigen Sekunden; Mittelstufe zwischen LaMa und Qwen; genau eine Vorlage mit der Fläche in der Signalfarbe |
 | bild-entfernen-osor | bild_erzeugen | OSOR auf SDXL-Inpainting (Lizenz CreativeML Open RAIL++-M: kommerziell mit Nutzungsauflagen) in PyTorch: entfernt in einem Schritt samt Schatten und Spiegelung; Vergleich der Mittelstufe, Name vorläufig; genau eine Vorlage mit der Fläche in der Signalfarbe |
+| bild-fuellen | bild_erzeugen | Qwen-Image 2.1 Turbo mit ControlNet-Union (Qwen Research License: nur nicht-kommerziell) über mflux: füllt die markierte Fläche nach Anweisung mit echter Maske, außerhalb bleibt alles; Entfernen und Füllen |
 
 Sichtbar heißt der Dienst nach seinem Modell ("MOSS-Image", `name` der Dienstdatei); Maschinenraum, Leitstelle und
 Apps setzen die Aufgabe klein dahinter ("MOSS-Image · Bilderzeugung"). Die Kennung `bildwerk-moss-image` bleibt.
@@ -67,7 +68,7 @@ wenn es sie noch nicht gibt (Änderungen von Hand bleiben). Gestartet und gelade
 
 Probe: `ls ~/Maschinenraum/dienste/bildwerk-*.toml ~/Maschinenraum/dienste/bild-entfernen*.toml` nennt
 `bildwerk-moss-image.toml`, `bildwerk-flux2-klein.toml`, `bildwerk-qwen-image-edit.toml`,
-`bildwerk-qwen-image-edit-schnell.toml`, `bild-entfernen-schnell.toml`, `bild-entfernen.toml` und `bild-entfernen-osor.toml`, und der Maschinenraum zeigt die Dienste unter
+`bildwerk-qwen-image-edit-schnell.toml`, `bild-entfernen-schnell.toml`, `bild-entfernen.toml`, `bild-entfernen-osor.toml` und `bild-fuellen.toml`, und der Maschinenraum zeigt die Dienste unter
 Dienste als aus.
 
 ### 2. Gewichte
@@ -97,6 +98,11 @@ Papierkorb. Aus der Sicherung liegt die übersetzte Ablage schon in der Modellab
 
 bild-entfernen (FLUX.2 klein 4B mit erase-v1) lädt Grundgewichte (16 GB) und LoRA samt fertig kodiertem Text (0,2 GB)
 mit einem Befehl: `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte flux2-klein-entfernen --laden`.
+Daraus baut `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk umwandeln flux2-klein-entfernen` die eigene
+8-Bit-Ablage mit eingerechnetem LoRA und kodiertem Text (`~/Maschinenraum/modelle/bild/mflux/flux2-klein-4b-erase-8bit`, 8 GB);
+der Dienst lädt nur daraus. bild-fuellen ebenso: `bildwerk gewichte qwen21-fuellen --laden` (Qwen-Image 2.1 Turbo 32,5 GB und
+ControlNet 7,6 GB), dann `bildwerk umwandeln qwen21-fuellen` (`bild/mflux/qwen-image-2.1-turbo-fuellen-8bit`). Die Originale
+bleiben liegen, bis Quellen und Duplikate gemeinsam abgeräumt werden (MR-4).
 bild-entfernen-osor ebenso SDXL-Inpainting 0.1 (fp16, 6,9 GB) und OSOR-SDXL Phase II (3,1 GB):
 `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte osor-sdxl-entfernen --laden`.
 

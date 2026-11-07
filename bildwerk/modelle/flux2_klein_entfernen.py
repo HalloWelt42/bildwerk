@@ -35,10 +35,13 @@ from .moss_image import Abbruchwache
 PORT = 8800
 #: Name des Dienstes im Maschinenraum und für die Leitstelle: die Fähigkeit (HELF-189), Mittelstufe ohne Zusatz
 DIENST = "bild-entfernen"
-#: die Grundgewichte (FLUX.2 klein 4B, wie der gepinnte Stand von mflux sie verlangt)
-PRUEFLISTE = Path(__file__).with_name("flux2_klein_entfernen.json")
-#: Zusätze aus anderen Repos: das LoRA und sein fertig kodierter Text
+#: das Original (FLUX.2 klein 4B, wie der gepinnte Stand von mflux es verlangt) und, als Zusatz, LoRA und kodierter Text
+PRUEFLISTE_QUELLE = Path(__file__).with_name("flux2_klein_entfernen.json")
 ZUSATZ_PRUEFLISTEN = [Path(__file__).with_name("flux2_klein_entfernen_lora.json")]
+#: die eigene Ablage (MR-4): 8 Bit mit eingerechnetem LoRA und dem kodierten Text daneben; nur daraus lädt der Dienst
+PRUEFLISTE = Path(__file__).with_name("flux2_klein_entfernen_8bit.json")
+LOKAL = "bild/mflux/flux2-klein-4b-erase-8bit"
+BITS = 8
 AUFGABEN = Path(__file__).with_name("flux2_klein_entfernen.aufgaben.toml")
 LORA, TEXT = "erase_v1_diffusers.safetensors", "prompt_embeds.safetensors"
 
@@ -82,6 +85,35 @@ def herkunft() -> tuple[str, str, list[str]]:
     return repo, ModelRevisions.get(repo), Flux2KleinWeightDefinition.get_download_patterns()
 
 
+def bauen(bits: int = BITS) -> Any:
+    """FLUX.2 klein 4B aus dem Original, quantisiert, mit eingerechnetem erase-v1 (für die eigene Ablage). Gespeichert
+    wird über `Flux2Klein`: dieselben Teilmodule wie `Flux2KleinEdit`, das in mflux 0.24.0 kein `save_model` hat."""
+    from mflux.models.common.config import ModelConfig
+    from mflux.models.flux2.variants.txt2img.flux2_klein import Flux2Klein
+
+    lora = Pruefliste.lesen(ZUSATZ_PRUEFLISTEN[0])
+    return Flux2Klein(quantize=bits, model_config=ModelConfig.flux2_klein_4b(), lora_paths=[str(lora.ordner(ablage()) / LORA)],
+                          lora_scales=[1.0])
+
+
+def aus_ablage(ordner: str) -> Any:
+    from mflux.models.common.config import ModelConfig
+    from mflux.models.flux2.variants.edit.flux2_klein_edit import Flux2KleinEdit
+
+    return Flux2KleinEdit(model_path=ordner, model_config=ModelConfig.flux2_klein_4b())
+
+
+def umwandeln(original_loeschen: bool) -> int:
+    """Die eigene 8-Bit-Ablage bauen (bildwerk umwandeln flux2-klein-entfernen); das Original bleibt (MR-4)."""
+    from ..eigene_ablage import umwandeln as bauen_und_speichern
+
+    if original_loeschen:
+        print("Quellen und Duplikate räumen wir später gemeinsam ab (MR-4); das Original bleibt.")
+    lora = Pruefliste.lesen(ZUSATZ_PRUEFLISTEN[0])
+    return bauen_und_speichern(ANGABEN.kennung, Pruefliste.lesen(PRUEFLISTE_QUELLE), PRUEFLISTE, LOKAL, bauen, aus_ablage,
+                               beilagen=[lora.ordner(ablage()) / TEXT])
+
+
 def ausschnitt_fuer(maske: Image.Image) -> tuple[Image.Image, tuple[int, int, int, int]] | None:
     """Die nach der Modellkarte gewachsene Maske und der Ausschnitt um sie; None ohne Markierung."""
     kasten = ausschnitt(maske)
@@ -93,35 +125,34 @@ def ausschnitt_fuer(maske: Image.Image) -> tuple[Image.Image, tuple[int, int, in
 
 
 class Motor:
-    """Hält Flux2KleinEdit aus mflux mit dem eingerechneten LoRA; geladen wird nur aus der Modellablage."""
+    """Hält Flux2KleinEdit aus mflux mit dem eingerechneten LoRA; geladen wird nur aus der eigenen 8-Bit-Ablage."""
 
     angaben = ANGABEN
+    #: die Ablage ist schon quantisiert; die Einstellung des Dienstes gilt hier nicht
+    quantisierung = Quantisierung.Q8
 
     def __init__(self, einstellungen: Einstellungen) -> None:
-        self.quantisierung: Quantisierung = einstellungen.quantisierung
-        self.pruefliste = Pruefliste.lesen(PRUEFLISTE)
-        self.zusatz = Pruefliste.lesen(ZUSATZ_PRUEFLISTEN[0])
+        self.pruefliste = Pruefliste.lesen(PRUEFLISTE) if PRUEFLISTE.is_file() else Pruefliste(
+            repo="black-forest-labs/FLUX.2-klein-4B", revision="", lizenz=ANGABEN.lizenz, lokal=LOKAL, dateien=[])
         self.m: Any = None
         self.signalfarbe: tuple[int, int, int] = tuple(ANGABEN.aufgaben[Aufgabe.ENTFERNEN].signalfarbe or (255, 0, 255))  # type: ignore[assignment]
         self._wache = Abbruchwache()
 
     def gewichte(self) -> Gewichtsstand:
         stand = pruefen(self.pruefliste, ablage())
-        zusatz = pruefen(self.zusatz, ablage())
-        stand.fehlen.extend(f"LoRA: {f}" for f in zusatz.fehlen)
+        if not self.pruefliste.dateien:
+            stand.fehlen.append("eigene Ablage (noch nicht umgewandelt)")
         return stand
 
     def laden(self) -> None:
         stand = self.gewichte()
         if not stand.vollstaendig:
-            raise GewichteFehlen(f"{stand.meldung}. Laden von Hand: bildwerk gewichte {ANGABEN.kennung} --laden")
+            raise GewichteFehlen(f"{stand.meldung}. Von Hand: bildwerk gewichte {ANGABEN.kennung} --laden, "
+                                 f"dann bildwerk umwandeln {ANGABEN.kennung}")
         import mlx.core as mx
-        from mflux.models.common.config import ModelConfig
-        from mflux.models.flux2.variants.edit.flux2_klein_edit import Flux2KleinEdit
 
-        ordner = self.zusatz.ordner(ablage())
-        self.m = Flux2KleinEdit(quantize=self.quantisierung.bits, model_config=ModelConfig.flux2_klein_4b(),
-                                lora_paths=[str(ordner / LORA)], lora_scales=[1.0])
+        ordner = Path(stand.ordner)
+        self.m = aus_ablage(str(ordner))
         self.m.callbacks.register(self._wache)
         text = mx.load(str(ordner / TEXT))
         # der Text der Modellkarte, fertig kodiert: an die Stelle der Kodierung (keine Gegenanweisung bei Führung 1)

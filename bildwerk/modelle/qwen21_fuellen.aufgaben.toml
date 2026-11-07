@@ -1,0 +1,15 @@
+# Aufgabenvorlagen für Qwen-Image 2.1 Turbo mit Maske (Dienst bild-fuellen, ATL-47 des Ateliers).
+#
+# Die Fläche steht in der Vorlage deckend in der Signalfarbe; der Dienst macht daraus die Maske (weiß neu, schwarz bleibt)
+# und gibt dem Modell die Anweisung. Außerhalb der Markierung ändert sich nichts.
+
+[entfernen]
+anweisung = "The empty background that continues the surrounding scene seamlessly, same light, texture and perspective; no objects, no people."
+sprache = "en"
+signalfarbe = [255, 0, 255]
+
+[fuellen]
+anweisung = "{wunsch}, fitting naturally into the surrounding scene with matching light, shadows, perspective and photographic style."
+ohne_wunsch = "Fill the area so that it continues the surrounding scene seamlessly, matching light and style."
+sprache = "en"
+signalfarbe = [255, 0, 255]

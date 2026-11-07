@@ -21,6 +21,7 @@ MODELLE: dict[str, str] = {
     "lama": "bildwerk.modelle.lama",
     "flux2-klein-entfernen": "bildwerk.modelle.flux2_klein_entfernen",
     "osor-sdxl-entfernen": "bildwerk.modelle.osor_sdxl_entfernen",
+    "qwen21-fuellen": "bildwerk.modelle.qwen21_fuellen",
 }
 
 

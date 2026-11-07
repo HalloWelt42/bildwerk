@@ -107,6 +107,30 @@ def motive(c: httpx.Client, b: dict, neu: bool) -> None:
             print(f"{ziel.relative_to(WURZEL)}: {time.monotonic() - beginn:.0f} s", flush=True)
 
 
+def erzeugen_vergleich(c: httpx.Client, b: dict, dienst: str, neu: bool) -> None:
+    """Die Motive des Portfolios mit einem anderen Bilddienst erzeugen (gleicher Text, Startwert, Größe; seine
+    vorgegebenen Schritte), zum Vergleich der Erzeuger: docs/beispiele/erzeugen/<aufgabe>/<dienst>.webp mit .json."""
+    m = b["motive"]
+    for aufgabe, a in b["aufgabe"].items():
+        ziel = ORDNER / "erzeugen" / aufgabe / f"{dienst}.webp"
+        if ziel.exists() and not neu:
+            continue
+        ziel.parent.mkdir(parents=True, exist_ok=True)
+        beginn = time.monotonic()
+        r = senden(c, {"model": dienst, "prompt": " ".join(a["motiv"].split()), "size": m["groesse"], "seed": m["startwert"],
+                       "response_format": "b64_json"})
+        if r.status_code != 200:
+            print(f"{aufgabe} / {dienst}: {r.status_code} {r.text[:200]}", flush=True)
+            continue
+        bild_aus(r).save(ziel, quality=88)
+        zusatz = r.json().get("x-leitstelle", {})
+        angaben = {"dienst": dienst, "aufgabe": aufgabe, "dauer_s": round(zusatz.get("dauer_ms", 0) / 1000, 2),
+                   "bis_antwort_s": round(time.monotonic() - beginn, 2), "schritte": zusatz.get("schritte"),
+                   "gerechnet_am": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+        ziel.with_suffix(".json").write_text(json.dumps(angaben, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        print(f"{aufgabe} / {dienst}: {angaben['dauer_s']} s im Dienst", flush=True)
+
+
 def freistellen(objekt: Image.Image, schwelle: int = 238) -> Image.Image:
     """Das Objekt vom weißen Grund lösen (grob, wie ein schnell freigestelltes Bild): fast Weißes wird durchsichtig."""
     rgba = objekt.convert("RGBA")
@@ -201,7 +225,8 @@ def rechnen(c: httpx.Client, b: dict, nur: str | None, neu: bool, dienst: str | 
 
 def main() -> int:
     p = argparse.ArgumentParser(description="Portfolio der Bildmodelle über die Leitstelle")
-    p.add_argument("befehl", choices=["motive", "rechnen"])
+    p.add_argument("befehl", choices=["motive", "rechnen", "erzeugen"],
+                   help="motive: Motive erzeugen; rechnen: Aufgaben je Modell; erzeugen: Motive mit --dienst zum Vergleich")
     p.add_argument("--schluessel-datei", required=True, type=Path)
     p.add_argument("--aufgabe", help="nur diese Aufgabe rechnen")
     p.add_argument("--neu", action="store_true", help="Vorhandenes neu erzeugen")
@@ -214,7 +239,12 @@ def main() -> int:
     b = lesen()
     schluessel = a.schluessel_datei.expanduser().read_text().strip()
     with httpx.Client(base_url=adresse, headers={"Authorization": f"Bearer {schluessel}"}, timeout=httpx.Timeout(3600, connect=10)) as c:
-        motive(c, b, a.neu) if a.befehl == "motive" else rechnen(c, b, a.aufgabe, a.neu, a.dienst, a.ausgabe)
+        if a.befehl == "motive":
+            motive(c, b, a.neu)
+        elif a.befehl == "erzeugen":
+            erzeugen_vergleich(c, b, a.dienst or sys.exit("erzeugen braucht --dienst"), a.neu)
+        else:
+            rechnen(c, b, a.aufgabe, a.neu, a.dienst, a.ausgabe)
     return 0
 
 

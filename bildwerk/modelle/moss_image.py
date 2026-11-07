@@ -18,11 +18,18 @@ from typing import Any
 from PIL import Image
 
 from ..bildformat import Bildauftrag, Groessenregel, Modellangaben, Schrittregel
+from ..eigene_ablage import liste_zu, ort
+from ..eigene_ablage import lesen as ablage_lesen
 from ..gewichte import Gewichtsstand, Pruefliste, ablage, pruefen
 from ..unterbau import Abgebrochen, Einstellungen, GewichteFehlen, Quantisierung
 
 PORT = 8791
-PRUEFLISTE = Path(__file__).with_name("moss_image.json")
+#: das Original (wie der gepinnte Stand von mflux es verlangt)
+PRUEFLISTE_QUELLE = Path(__file__).with_name("moss_image.json")
+#: die eigene Ablage (MR-4) je Bitbreite; nur daraus lädt der Dienst, in der Bitbreite seiner Einstellung (Vorgabe 8 Bit)
+BASIS, BITS = "moss-image-sft", 8
+LOKAL = ort(BASIS, BITS)
+PRUEFLISTE = liste_zu(Path(__file__), "moss_image", BITS)
 
 ANGABEN = Modellangaben(
     kennung="moss-image",
@@ -69,28 +76,55 @@ class Abbruchwache:
             raise Abgebrochen(f"nach Schritt {t + 1}")
 
 
+def bauen(bits: int = BITS) -> Any:
+    from mflux.models.common.config import ModelConfig
+    from mflux.models.moss_image import MOSSImage
+
+    return MOSSImage(quantize=bits, model_config=ModelConfig.moss_image_sft())
+
+
+def aus_ablage(ordner: str) -> Any:
+    from mflux.models.common.config import ModelConfig
+    from mflux.models.moss_image import MOSSImage
+
+    return MOSSImage(model_path=ordner, model_config=ModelConfig.moss_image_sft())
+
+
+def umwandeln(original_loeschen: bool, bits: int = BITS) -> int:
+    """Die eigene Ablage einer Bitbreite bauen (bildwerk umwandeln moss-image [--bits 4]); das Original bleibt (MR-4)."""
+    from ..eigene_ablage import umwandeln as bauen_und_speichern
+
+    if original_loeschen:
+        print("Quellen und Duplikate räumen wir später gemeinsam ab (MR-4); das Original bleibt.")
+    return bauen_und_speichern(ANGABEN.kennung, Pruefliste.lesen(PRUEFLISTE_QUELLE), liste_zu(Path(__file__), "moss_image", bits),
+                               ort(BASIS, bits), lambda: bauen(bits), aus_ablage)
+
+
 class Motor:
-    """Hält MOSSImage aus mflux; geladen wird nur aus der Modellablage, nie aus dem Netz."""
+    """Hält MOSSImage aus mflux; geladen wird nur aus der eigenen Ablage in der Bitbreite der Einstellung."""
 
     angaben = ANGABEN
 
     def __init__(self, einstellungen: Einstellungen) -> None:
         self.quantisierung: Quantisierung = einstellungen.quantisierung
-        self.pruefliste = Pruefliste.lesen(PRUEFLISTE)
+        bits = self.quantisierung.bits or BITS
+        self.pruefliste = ablage_lesen(liste_zu(Path(__file__), "moss_image", bits), "OpenMOSS-Team/MOSS-Image-SFT", ANGABEN.lizenz,
+                                       ort(BASIS, bits))
         self.m: Any = None
         self._wache = Abbruchwache()
 
     def gewichte(self) -> Gewichtsstand:
-        return pruefen(self.pruefliste, ablage())
+        stand = pruefen(self.pruefliste, ablage())
+        if not self.pruefliste.dateien:
+            stand.fehlen.append("eigene Ablage (noch nicht umgewandelt)")
+        return stand
 
     def laden(self) -> None:
         stand = self.gewichte()
         if not stand.vollstaendig:
-            raise GewichteFehlen(f"{stand.meldung}. Laden von Hand: bildwerk gewichte {ANGABEN.kennung} --laden")
-        from mflux.models.common.config import ModelConfig
-        from mflux.models.moss_image import MOSSImage
-
-        self.m = MOSSImage(quantize=self.quantisierung.bits, model_config=ModelConfig.moss_image_sft())
+            raise GewichteFehlen(f"{stand.meldung}. Von Hand: bildwerk gewichte {ANGABEN.kennung} --laden, "
+                                 f"dann bildwerk umwandeln {ANGABEN.kennung} --bits {self.quantisierung.bits or BITS}")
+        self.m = aus_ablage(stand.ordner)
         self.m.callbacks.register(self._wache)
 
     def erzeugen(self, auftrag: Bildauftrag, abbruch: threading.Event) -> list[Image.Image]:

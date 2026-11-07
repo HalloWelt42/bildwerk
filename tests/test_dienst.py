@@ -26,7 +26,7 @@ class ScheinMotor:
     angaben = moss_image.ANGABEN
 
     def __init__(self, gewichte_da: bool = True, laden_fehler: Exception | None = None) -> None:
-        self.pruefliste = Pruefliste.lesen(moss_image.PRUEFLISTE)
+        self.pruefliste = Pruefliste.lesen(moss_image.PRUEFLISTE_QUELLE)
         self.gewichte_da, self.laden_fehler = gewichte_da, laden_fehler
         self.geladen = 0
         self.auftraege: list[Bildauftrag] = []

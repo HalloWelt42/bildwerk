@@ -27,6 +27,8 @@ from typing import Any
 from PIL import Image
 
 from ..bildformat import Aufgabe, Bildauftrag, Groessenregel, Modellangaben, Schrittregel, aufgaben_lesen
+from ..eigene_ablage import liste_zu, ort
+from ..eigene_ablage import lesen as ablage_lesen
 from ..entfernen import ausschnitt, maske_aus_signalfarbe, wachsen, zurueckmischen
 from ..gewichte import Gewichtsstand, Pruefliste, ablage, pruefen
 from ..unterbau import Abgebrochen, Einstellungen, GewichteFehlen, Quantisierung
@@ -38,10 +40,11 @@ DIENST = "bild-entfernen"
 #: das Original (FLUX.2 klein 4B, wie der gepinnte Stand von mflux es verlangt) und, als Zusatz, LoRA und kodierter Text
 PRUEFLISTE_QUELLE = Path(__file__).with_name("flux2_klein_entfernen.json")
 ZUSATZ_PRUEFLISTEN = [Path(__file__).with_name("flux2_klein_entfernen_lora.json")]
-#: die eigene Ablage (MR-4): 8 Bit mit eingerechnetem LoRA und dem kodierten Text daneben; nur daraus lädt der Dienst
-PRUEFLISTE = Path(__file__).with_name("flux2_klein_entfernen_8bit.json")
-LOKAL = "bild/mflux/flux2-klein-4b-erase-8bit"
-BITS = 8
+#: die eigene Ablage (MR-4) je Bitbreite, mit eingerechnetem LoRA und dem kodierten Text daneben; nur daraus lädt der
+#: Dienst, in der Bitbreite seiner Einstellung (BILDWERK_QUANTISIERUNG, Vorgabe 8 Bit)
+BASIS, BITS = "flux2-klein-4b-erase", 8
+LOKAL = ort(BASIS, BITS)
+PRUEFLISTE = liste_zu(Path(__file__), "flux2_klein_entfernen", BITS)
 AUFGABEN = Path(__file__).with_name("flux2_klein_entfernen.aufgaben.toml")
 LORA, TEXT = "erase_v1_diffusers.safetensors", "prompt_embeds.safetensors"
 
@@ -103,15 +106,15 @@ def aus_ablage(ordner: str) -> Any:
     return Flux2KleinEdit(model_path=ordner, model_config=ModelConfig.flux2_klein_4b())
 
 
-def umwandeln(original_loeschen: bool) -> int:
-    """Die eigene 8-Bit-Ablage bauen (bildwerk umwandeln flux2-klein-entfernen); das Original bleibt (MR-4)."""
+def umwandeln(original_loeschen: bool, bits: int = BITS) -> int:
+    """Die eigene Ablage einer Bitbreite bauen (bildwerk umwandeln flux2-klein-entfernen [--bits 4]); das Original bleibt."""
     from ..eigene_ablage import umwandeln as bauen_und_speichern
 
     if original_loeschen:
         print("Quellen und Duplikate räumen wir später gemeinsam ab (MR-4); das Original bleibt.")
     lora = Pruefliste.lesen(ZUSATZ_PRUEFLISTEN[0])
-    return bauen_und_speichern(ANGABEN.kennung, Pruefliste.lesen(PRUEFLISTE_QUELLE), PRUEFLISTE, LOKAL, bauen, aus_ablage,
-                               beilagen=[lora.ordner(ablage()) / TEXT])
+    return bauen_und_speichern(ANGABEN.kennung, Pruefliste.lesen(PRUEFLISTE_QUELLE), liste_zu(Path(__file__), "flux2_klein_entfernen", bits),
+                               ort(BASIS, bits), lambda: bauen(bits), aus_ablage, beilagen=[lora.ordner(ablage()) / TEXT])
 
 
 def ausschnitt_fuer(maske: Image.Image) -> tuple[Image.Image, tuple[int, int, int, int]] | None:
@@ -125,15 +128,16 @@ def ausschnitt_fuer(maske: Image.Image) -> tuple[Image.Image, tuple[int, int, in
 
 
 class Motor:
-    """Hält Flux2KleinEdit aus mflux mit dem eingerechneten LoRA; geladen wird nur aus der eigenen 8-Bit-Ablage."""
+    """Hält Flux2KleinEdit aus mflux mit dem eingerechneten LoRA; geladen wird nur aus der eigenen Ablage in der
+    Bitbreite der Einstellung des Dienstes."""
 
     angaben = ANGABEN
-    #: die Ablage ist schon quantisiert; die Einstellung des Dienstes gilt hier nicht
-    quantisierung = Quantisierung.Q8
 
     def __init__(self, einstellungen: Einstellungen) -> None:
-        self.pruefliste = Pruefliste.lesen(PRUEFLISTE) if PRUEFLISTE.is_file() else Pruefliste(
-            repo="black-forest-labs/FLUX.2-klein-4B", revision="", lizenz=ANGABEN.lizenz, lokal=LOKAL, dateien=[])
+        self.quantisierung: Quantisierung = einstellungen.quantisierung
+        bits = self.quantisierung.bits or BITS
+        self.pruefliste = ablage_lesen(liste_zu(Path(__file__), "flux2_klein_entfernen", bits), "black-forest-labs/FLUX.2-klein-4B",
+                                       ANGABEN.lizenz, ort(BASIS, bits))
         self.m: Any = None
         self.signalfarbe: tuple[int, int, int] = tuple(ANGABEN.aufgaben[Aufgabe.ENTFERNEN].signalfarbe or (255, 0, 255))  # type: ignore[assignment]
         self._wache = Abbruchwache()
@@ -148,7 +152,7 @@ class Motor:
         stand = self.gewichte()
         if not stand.vollstaendig:
             raise GewichteFehlen(f"{stand.meldung}. Von Hand: bildwerk gewichte {ANGABEN.kennung} --laden, "
-                                 f"dann bildwerk umwandeln {ANGABEN.kennung}")
+                                 f"dann bildwerk umwandeln {ANGABEN.kennung} --bits {self.quantisierung.bits or BITS}")
         import mlx.core as mx
 
         ordner = Path(stand.ordner)

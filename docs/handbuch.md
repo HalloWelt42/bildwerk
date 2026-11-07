@@ -10,7 +10,7 @@ sicherung:
   - "das Repo liegt bisher nur auf dem Mac (keine entfernte Ablage): der Ordner gehört zur Sicherung des Macs"
 schluessel_orte: []
 einrichten: einrichten.sh
-stand: 471f341
+stand: a5176dd
 ---
 
 # Bildwerk
@@ -102,7 +102,9 @@ Daraus baut `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk
 8-Bit-Ablage mit eingerechnetem LoRA und kodiertem Text (`~/Maschinenraum/modelle/bild/mflux/flux2-klein-4b-erase-8bit`, 8 GB);
 der Dienst lädt nur daraus. bild-fuellen ebenso: `bildwerk gewichte qwen21-fuellen --laden` (Qwen-Image 2.1 Turbo 32,5 GB und
 ControlNet 7,6 GB), dann `bildwerk umwandeln qwen21-fuellen` (`bild/mflux/qwen-image-2.1-turbo-fuellen-8bit`). Die Originale
-bleiben liegen, bis Quellen und Duplikate gemeinsam abgeräumt werden (MR-4).
+bleiben liegen, bis Quellen und Duplikate gemeinsam abgeräumt werden (MR-4). MOSS-Image ebenso: `bildwerk umwandeln moss-image`
+(`bild/mflux/moss-image-sft-8bit`, 14 GB statt 27 GB). Die eigenen Ablagen gibt es je Bitbreite (`--bits 4` oder `8`,
+Ordner `...-4bit` bzw. `...-8bit`); welche ein Dienst lädt, sagt `BILDWERK_QUANTISIERUNG` in seiner Dienstdatei (MR-5).
 bild-entfernen-osor ebenso SDXL-Inpainting 0.1 (fp16, 6,9 GB) und OSOR-SDXL Phase II (3,1 GB):
 `HF_HUB_CACHE=~/Maschinenraum/modelle/huggingface .venv/bin/bildwerk gewichte osor-sdxl-entfernen --laden`.
 

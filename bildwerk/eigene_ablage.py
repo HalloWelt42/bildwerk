@@ -18,6 +18,27 @@ from typing import Any
 from .gewichte import Pruefliste, ablage, aus_ordner, pruefen
 
 
+#: Bitbreiten, für die eine eigene Ablage gebaut werden kann (MR-5: Messreihen 4 gegen 8 Bit)
+BITS = (4, 8)
+
+
+def ort(basis: str, bits: int) -> str:
+    """Ort der eigenen Ablage relativ zur Modellablage, je Bitbreite ein eigener (etwa bild/mflux/<basis>-8bit)."""
+    if bits not in BITS:
+        raise ValueError(f"Eigene Ablagen gibt es für {', '.join(map(str, BITS))} Bit, nicht für {bits}")
+    return f"bild/mflux/{basis}-{bits}bit"
+
+
+def liste_zu(modul: Path, stamm: str, bits: int) -> Path:
+    """Prüfliste der eigenen Ablage einer Bitbreite neben dem Modul (etwa <stamm>_8bit.json)."""
+    return modul.with_name(f"{stamm}_{bits}bit.json")
+
+
+def lesen(liste: Path, repo: str, lizenz: str, lokal: str) -> Pruefliste:
+    """Die Prüfliste der eigenen Ablage, oder eine leere, solange sie nicht gebaut ist."""
+    return Pruefliste.lesen(liste) if liste.is_file() else Pruefliste(repo=repo, revision="", lizenz=lizenz, lokal=lokal, dateien=[])
+
+
 def fertig(liste: Pruefliste) -> bool:
     """Liegt die eigene Ablage vollständig vor?"""
     return bool(liste.dateien) and pruefen(liste, ablage()).vollstaendig

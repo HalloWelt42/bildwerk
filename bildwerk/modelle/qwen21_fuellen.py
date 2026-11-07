@@ -24,6 +24,8 @@ from typing import Any
 from PIL import Image
 
 from ..bildformat import Aufgabe, Bildauftrag, Groessenregel, Modellangaben, Schrittregel, aufgaben_lesen
+from ..eigene_ablage import liste_zu, ort
+from ..eigene_ablage import lesen as ablage_lesen
 from ..entfernen import ausschnitt, maske_aus_signalfarbe, wachsen, zurueckmischen
 from ..gewichte import Gewichtsstand, Pruefliste, ablage, pruefen
 from ..unterbau import Abgebrochen, Einstellungen, GewichteFehlen, Quantisierung
@@ -35,10 +37,11 @@ DIENST = "bild-fuellen"
 #: das Original (wie der gepinnte Stand von mflux es verlangt) und, als Zusatz, das ControlNet-Union, das die Maske liest
 PRUEFLISTE_QUELLE = Path(__file__).with_name("qwen21_fuellen.json")
 ZUSATZ_PRUEFLISTEN = [Path(__file__).with_name("qwen21_fuellen_controlnet.json")]
-#: die eigene Ablage (MR-4): 8 Bit samt ControlNet unter controlnet/; nur daraus lädt der Dienst
-PRUEFLISTE = Path(__file__).with_name("qwen21_fuellen_8bit.json")
-LOKAL = "bild/mflux/qwen-image-2.1-turbo-fuellen-8bit"
-BITS = 8
+#: die eigene Ablage (MR-4) je Bitbreite, samt ControlNet unter controlnet/; nur daraus lädt der Dienst, in der
+#: Bitbreite seiner Einstellung (BILDWERK_QUANTISIERUNG, Vorgabe 8 Bit)
+BASIS, BITS = "qwen-image-2.1-turbo-fuellen", 8
+LOKAL = ort(BASIS, BITS)
+PRUEFLISTE = liste_zu(Path(__file__), "qwen21_fuellen", BITS)
 AUFGABEN = Path(__file__).with_name("qwen21_fuellen.aufgaben.toml")
 
 #: Arbeitsgröße des Ausschnitts (Kanten im Raster von 16)
@@ -105,25 +108,26 @@ def aus_ablage(ordner: str) -> Any:
     return QwenImage21Controlnet(model_path=ordner, model_config=ModelConfig.qwen_image_21_turbo_controlnet_union())
 
 
-def umwandeln(original_loeschen: bool) -> int:
-    """Die eigene 8-Bit-Ablage bauen (bildwerk umwandeln qwen21-fuellen); das Original bleibt (MR-4)."""
+def umwandeln(original_loeschen: bool, bits: int = BITS) -> int:
+    """Die eigene Ablage einer Bitbreite bauen (bildwerk umwandeln qwen21-fuellen [--bits 4]); das Original bleibt (MR-4)."""
     from ..eigene_ablage import umwandeln as bauen_und_speichern
 
     if original_loeschen:
         print("Quellen und Duplikate räumen wir später gemeinsam ab (MR-4); das Original bleibt.")
-    return bauen_und_speichern(ANGABEN.kennung, Pruefliste.lesen(PRUEFLISTE_QUELLE), PRUEFLISTE, LOKAL, bauen, aus_ablage)
+    return bauen_und_speichern(ANGABEN.kennung, Pruefliste.lesen(PRUEFLISTE_QUELLE), liste_zu(Path(__file__), "qwen21_fuellen", bits),
+                               ort(BASIS, bits), lambda: bauen(bits), aus_ablage)
 
 
 class Motor:
-    """Hält QwenImage21Controlnet aus mflux; geladen wird nur aus der eigenen 8-Bit-Ablage."""
+    """Hält QwenImage21Controlnet aus mflux; geladen wird nur aus der eigenen Ablage in der Bitbreite der Einstellung."""
 
     angaben = ANGABEN
-    #: die Ablage ist schon quantisiert; die Einstellung des Dienstes gilt hier nicht
-    quantisierung = Quantisierung.Q8
 
     def __init__(self, einstellungen: Einstellungen) -> None:
-        self.pruefliste = Pruefliste.lesen(PRUEFLISTE) if PRUEFLISTE.is_file() else Pruefliste(
-            repo="Qwen/Qwen-Image-2.1-Turbo", revision="", lizenz=ANGABEN.lizenz, lokal=LOKAL, dateien=[])
+        self.quantisierung: Quantisierung = einstellungen.quantisierung
+        bits = self.quantisierung.bits or BITS
+        self.pruefliste = ablage_lesen(liste_zu(Path(__file__), "qwen21_fuellen", bits), "Qwen/Qwen-Image-2.1-Turbo", ANGABEN.lizenz,
+                                       ort(BASIS, bits))
         self.signalfarbe: dict[Aufgabe, tuple[int, int, int]] = {
             a: tuple(v.signalfarbe) for a, v in ANGABEN.aufgaben.items() if v.signalfarbe}  # type: ignore[misc]
         self.m: Any = None
@@ -139,7 +143,7 @@ class Motor:
         stand = self.gewichte()
         if not stand.vollstaendig:
             raise GewichteFehlen(f"{stand.meldung}. Von Hand: bildwerk gewichte {ANGABEN.kennung} --laden, "
-                                 f"dann bildwerk umwandeln {ANGABEN.kennung}")
+                                 f"dann bildwerk umwandeln {ANGABEN.kennung} --bits {self.quantisierung.bits or BITS}")
         self.m = aus_ablage(stand.ordner)
         self.m.callbacks.register(self._wache)
 

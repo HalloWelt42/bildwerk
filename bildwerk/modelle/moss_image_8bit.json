@@ -1,0 +1,78 @@
+{
+  "repo": "OpenMOSS-Team/MOSS-Image-SFT",
+  "revision": "f972bd4b4b9e3852133cc5da954d87bc32cd8fb9",
+  "lizenz": "Apache-2.0",
+  "lokal": "bild/mflux/moss-image-sft-8bit",
+  "dateien": [
+    {
+      "pfad": "text_encoder/0.safetensors",
+      "groesse": 2124956932,
+      "sha256": "1d0f2fe9431dc908b4cfebff2770ce8b96cf9b6256e6f07421496485b8361c40"
+    },
+    {
+      "pfad": "text_encoder/1.safetensors",
+      "groesse": 2123858632,
+      "sha256": "265058f714e6cddeefb08989427c853209b9fd33f38e8aad4428660e60f3f853"
+    },
+    {
+      "pfad": "text_encoder/2.safetensors",
+      "groesse": 2123875343,
+      "sha256": "1c7d9942f7e6b059f3459ddd2a536c5a828d4bce46d9fdaafdb3dd7b5159639a"
+    },
+    {
+      "pfad": "text_encoder/3.safetensors",
+      "groesse": 2061132467,
+      "sha256": "f995a4eba76aa89fdd22a25fd50ee10aaa75971737bc894366568445ba4e7113"
+    },
+    {
+      "pfad": "text_encoder/model.safetensors.index.json",
+      "groesse": 54192,
+      "sha256": "cfc820f6580723998ea2a095e1c258ba3783524fd4a853cc32caaf9042315670"
+    },
+    {
+      "pfad": "tokenizer/chat_template.jinja",
+      "groesse": 7756,
+      "sha256": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715"
+    },
+    {
+      "pfad": "tokenizer/tokenizer.json",
+      "groesse": 19989325,
+      "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523"
+    },
+    {
+      "pfad": "tokenizer/tokenizer_config.json",
+      "groesse": 1123,
+      "sha256": "bee8eba30f0eb4af73c0fe2cd06d0f89b657d7819941c438157ec42f7c80ea87"
+    },
+    {
+      "pfad": "transformer/0.safetensors",
+      "groesse": 2140808302,
+      "sha256": "9425d5e4f39f043c3a7d1c0676360ada8b7be84216b9c1682f6ca952f5688178"
+    },
+    {
+      "pfad": "transformer/1.safetensors",
+      "groesse": 2129324635,
+      "sha256": "9b83123ef82681a4c3b843e43bbb49ed7bedcd3fe276905dd302e69664eef643"
+    },
+    {
+      "pfad": "transformer/2.safetensors",
+      "groesse": 1130281951,
+      "sha256": "c3a91a1c7e35c281c7af2789b1b07a4dd85f20b900e172fee60127e9d3d49e50"
+    },
+    {
+      "pfad": "transformer/model.safetensors.index.json",
+      "groesse": 50578,
+      "sha256": "c385aa22daffae8fd81819e55ec1b78755acfd1554fd78bf8bf33b283a3d6fe9"
+    },
+    {
+      "pfad": "vae/0.safetensors",
+      "groesse": 123240398,
+      "sha256": "2fd063835fd5a6db28442c408918830ebaaa61da4ba69986db3224bd40568f32"
+    },
+    {
+      "pfad": "vae/model.safetensors.index.json",
+      "groesse": 17547,
+      "sha256": "4d629a6165dd5fc0fdca676c981ee5be480f1ac61ed6c012e1c9b34d3e0f4e09"
+    }
+  ]
+}

@@ -13,6 +13,7 @@ PRUEFLISTE (die eigene Ablage, aus der der Dienst lädt).
 from __future__ import annotations
 
 import argparse
+import inspect
 import sys
 
 from .modelle import MODELLE, modul
@@ -70,14 +71,19 @@ def pruefliste(kennung: str) -> int:
     return 0
 
 
-def umwandeln(kennung: str, original_loeschen: bool) -> int:
+def umwandeln(kennung: str, original_loeschen: bool, bits: int | None = None) -> int:
     """Quantisiert in die eigene Ablage speichern, die neue Prüfliste schreiben, Probeladen; erst danach auf Wunsch das
     Original aus dem Zwischenspeicher löschen. Rechnet nichts (kein Bild), braucht aber den Speicher des Modells."""
     m = modul(kennung)
     if not hasattr(m, "umwandeln"):
         print(f"{kennung} lädt direkt aus Hugging Face; Umwandeln gibt es nur für Modelle mit eigener Ablage.")
         return 2
-    return m.umwandeln(original_loeschen)
+    if bits is None:
+        return m.umwandeln(original_loeschen)
+    if "bits" not in inspect.signature(m.umwandeln).parameters:
+        print(f"{kennung} hat nur eine Ablage; --bits gilt hier nicht.")
+        return 2
+    return m.umwandeln(original_loeschen, bits)
 
 
 def main() -> None:
@@ -95,6 +101,7 @@ def main() -> None:
     l.add_argument("modell", choices=sorted(MODELLE))
     u = befehle.add_parser("umwandeln", help="quantisiert in die eigene Ablage speichern (Modelle mit eigener Ablage)")
     u.add_argument("modell", choices=sorted(MODELLE))
+    u.add_argument("--bits", type=int, choices=[4, 8], help="Bitbreite der eigenen Ablage (Modelle, die mehrere kennen; Vorgabe 8)")
     u.add_argument("--original-loeschen", action="store_true", help="das Original in den Papierkorb legen, wenn eine Messung belegt, dass die eigene Ablage rechnet")
     a = p.parse_args()
     if a.befehl == "gewichte":
@@ -102,7 +109,7 @@ def main() -> None:
     if a.befehl == "pruefliste":
         sys.exit(pruefliste(a.modell))
     if a.befehl == "umwandeln":
-        sys.exit(umwandeln(a.modell, a.original_loeschen))
+        sys.exit(umwandeln(a.modell, a.original_loeschen, a.bits))
     dienst(a.befehl, a.port, a.probe)
 
 

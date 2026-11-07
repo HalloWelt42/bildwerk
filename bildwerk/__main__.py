@@ -43,7 +43,19 @@ def gewichte(kennung: str, pruefsummen: bool, laden: bool) -> int:
     if pruefsummen or laden:
         stand = g.pruefen(liste, wo, pruefsummen=True)
     print(stand.meldung + (" (Prüfsummen stimmen)" if stand.vollstaendig and (pruefsummen or laden) else ""))
-    return 0 if stand.vollstaendig else 1
+    vollstaendig = stand.vollstaendig
+    # Zusätze aus anderen Repos (etwa ein LoRA), die der Dienst neben den Grundgewichten braucht
+    for datei in getattr(m, "ZUSATZ_PRUEFLISTEN", []):
+        zusatz = g.Pruefliste.lesen(datei)
+        print(f"Zusatz {zusatz.repo} @ {zusatz.revision}: {len(zusatz.dateien)} Dateien, {zusatz.groesse / 1e9:.2f} GB")
+        z = g.pruefen(zusatz, wo)
+        if laden and not z.vollstaendig:
+            g.laden(zusatz, wo)
+        if pruefsummen or laden:
+            z = g.pruefen(zusatz, wo, pruefsummen=True)
+        print(z.meldung)
+        vollstaendig = vollstaendig and z.vollstaendig
+    return 0 if vollstaendig else 1
 
 
 def pruefliste(kennung: str) -> int:

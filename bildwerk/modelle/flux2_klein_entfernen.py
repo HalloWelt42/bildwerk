@@ -1,0 +1,160 @@
+"""Dienst bild-entfernen: FLUX.2 klein 4B mit dem LoRA erase-v1 über mflux, Entfernen in einigen Sekunden (ATL-43 des
+Ateliers). Die Mittelstufe zwischen LaMa (bild-entfernen-schnell, unter einer Sekunde, verschmiert große Flächen) und
+Qwen-Image-Edit (Minuten): das LoRA ersetzt die markierte Fläche durch den umgebenden Hintergrund, laut Modellkarte samt
+Schatten und Spiegelung des Objekts.
+
+Ansteuerung nach der Modellkarte von erase-v1: zwei Bezugsbilder, erst das Foto, dann die Maske als RGB (weiß entfernen,
+schwarz behalten); mflux legt sie mit den Zeitkoordinaten 10 und 20 neben das Ziel, wie das LoRA es gelernt hat. Der Text
+wird nicht neu kodiert: die Karte liefert ihn fertig kodiert (`prompt_embeds.safetensors`), der Dienst setzt ihn an die
+Stelle der Textkodierung. 4 Schritte, keine Führung, höchstens 1 Megapixel; die Auswahl wächst um rund 2 % der größeren
+Kante (sonst bleiben Reste), und nur innerhalb von ihr wird das Ergebnis eingesetzt.
+
+Schnittstelle wie jeder Bilddienst: `/v1/images/edits` mit genau einer Vorlage, die Fläche deckend in der Signalfarbe
+der Aufgabenvorlage (wie bei LaMa und Qwen). Die Anweisung braucht das Modell nicht.
+
+Lizenz: Apache-2.0 (FLUX.2 klein 4B und erase-v1), die Bilder sind frei nutzbar.
+"""
+
+from __future__ import annotations
+
+import io
+import tempfile
+import threading
+from datetime import date
+from pathlib import Path
+from typing import Any
+
+from PIL import Image
+
+from ..bildformat import Aufgabe, Bildauftrag, Groessenregel, Modellangaben, Schrittregel, aufgaben_lesen
+from ..entfernen import ausschnitt, maske_aus_signalfarbe, wachsen, zurueckmischen
+from ..gewichte import Gewichtsstand, Pruefliste, ablage, pruefen
+from ..unterbau import Abgebrochen, Einstellungen, GewichteFehlen, Quantisierung
+from .moss_image import Abbruchwache
+
+PORT = 8798
+#: Name des Dienstes im Maschinenraum und für die Leitstelle: die Fähigkeit (HELF-189), Mittelstufe ohne Zusatz
+DIENST = "bild-entfernen"
+#: die Grundgewichte (FLUX.2 klein 4B, wie der gepinnte Stand von mflux sie verlangt)
+PRUEFLISTE = Path(__file__).with_name("flux2_klein_entfernen.json")
+#: Zusätze aus anderen Repos: das LoRA und sein fertig kodierter Text
+ZUSATZ_PRUEFLISTEN = [Path(__file__).with_name("flux2_klein_entfernen_lora.json")]
+AUFGABEN = Path(__file__).with_name("flux2_klein_entfernen.aufgaben.toml")
+LORA, TEXT = "erase_v1_diffusers.safetensors", "prompt_embeds.safetensors"
+
+#: Arbeitsgröße: höchstens 1 Megapixel, Kanten im Raster von 16 (Modellkarte)
+ARBEIT = 1024
+#: um diesen Anteil der größeren Kante des Ausschnitts wächst die Auswahl (Modellkarte: rund 2 %)
+WACHSEN = 0.02
+
+ANGABEN = Modellangaben(
+    kennung="flux2-klein-entfernen",
+    name="FLUX.2 klein 4B erase",
+    aliase=[DIENST, "slopshop/erase-v1", "flux2-klein-4b-erase"],
+    zweck="Markierte Flächen entfernen und mit dem Hintergrund füllen, samt Schatten und Spiegelung, in einigen Sekunden",
+    kann_bearbeiten=True,
+    vorlagen_min=1,
+    vorlagen_max=1,
+    eignung=[],
+    sprachen=[],
+    parameter_mrd=4.0,
+    textkodierer="keiner (Text fertig kodiert)",
+    lizenz="Apache-2.0",
+    lizenz_hinweis="Apache-2.0, frei nutzbar.",
+    erschienen=date(2026, 1, 14),
+    # Rechengröße frei (gerechnet wird ein Ausschnitt auf der Arbeitsgröße)
+    groessen=Groessenregel(raster=8, kante_min=64, kante_max=4096, pixel_min=64 * 64, pixel_max=4096 * 4096, vorgabe="1024x1024"),
+    # das LoRA ist auf 4 Schritte gelernt
+    schritte=Schrittregel(vorgabe=4, kleinste=4, groesste=4),
+    guidance=1.0,
+    beschreibung_max_token=0,
+    aufgaben=aufgaben_lesen(AUFGABEN),
+)
+
+
+def herkunft() -> tuple[str, str, list[str]]:
+    """Repo, Revision und Dateimuster, wie der gepinnte Stand von mflux sie für FLUX.2 klein 4B verlangt."""
+    from mflux.models.common.config import ModelConfig
+    from mflux.models.common.resolution.model_revisions import ModelRevisions
+    from mflux.models.flux2.weights.flux2_weight_definition import Flux2KleinWeightDefinition
+
+    repo = ModelConfig.flux2_klein_4b().model_name
+    return repo, ModelRevisions.get(repo), Flux2KleinWeightDefinition.get_download_patterns()
+
+
+def ausschnitt_fuer(maske: Image.Image) -> tuple[Image.Image, tuple[int, int, int, int]] | None:
+    """Die nach der Modellkarte gewachsene Maske und der Ausschnitt um sie; None ohne Markierung."""
+    kasten = ausschnitt(maske)
+    if kasten is None:
+        return None
+    gewachsen = wachsen(maske, round(WACHSEN * max(kasten[2] - kasten[0], kasten[3] - kasten[1])))
+    kasten = ausschnitt(gewachsen)
+    return (gewachsen, kasten) if kasten else None
+
+
+class Motor:
+    """Hält Flux2KleinEdit aus mflux mit dem eingerechneten LoRA; geladen wird nur aus der Modellablage."""
+
+    angaben = ANGABEN
+
+    def __init__(self, einstellungen: Einstellungen) -> None:
+        self.quantisierung: Quantisierung = einstellungen.quantisierung
+        self.pruefliste = Pruefliste.lesen(PRUEFLISTE)
+        self.zusatz = Pruefliste.lesen(ZUSATZ_PRUEFLISTEN[0])
+        self.m: Any = None
+        self.signalfarbe: tuple[int, int, int] = tuple(ANGABEN.aufgaben[Aufgabe.ENTFERNEN].signalfarbe or (255, 0, 255))  # type: ignore[assignment]
+        self._wache = Abbruchwache()
+
+    def gewichte(self) -> Gewichtsstand:
+        stand = pruefen(self.pruefliste, ablage())
+        zusatz = pruefen(self.zusatz, ablage())
+        stand.fehlen.extend(f"LoRA: {f}" for f in zusatz.fehlen)
+        return stand
+
+    def laden(self) -> None:
+        stand = self.gewichte()
+        if not stand.vollstaendig:
+            raise GewichteFehlen(f"{stand.meldung}. Laden von Hand: bildwerk gewichte {ANGABEN.kennung} --laden")
+        import mlx.core as mx
+        from mflux.models.common.config import ModelConfig
+        from mflux.models.flux2.variants.edit.flux2_klein_edit import Flux2KleinEdit
+
+        ordner = self.zusatz.ordner(ablage())
+        self.m = Flux2KleinEdit(quantize=self.quantisierung.bits, model_config=ModelConfig.flux2_klein_4b(),
+                                lora_paths=[str(ordner / LORA)], lora_scales=[1.0])
+        self.m.callbacks.register(self._wache)
+        text = mx.load(str(ordner / TEXT))
+        # der Text der Modellkarte, fertig kodiert: an die Stelle der Kodierung (keine Gegenanweisung bei Führung 1)
+        self.m._encode_prompt_pair = lambda **_: (text["prompt_embeds"], text["text_ids"], None, None)
+
+    def erzeugen(self, auftrag: Bildauftrag, abbruch: threading.Event) -> list[Image.Image]:
+        if len(auftrag.vorlagen) != 1:
+            raise ValueError("Entfernen rechnet mit genau einer Vorlage")
+        bild = Image.open(io.BytesIO(auftrag.vorlagen[0])).convert("RGB")
+        if bild.size != (auftrag.breite, auftrag.hoehe):
+            bild = bild.resize((auftrag.breite, auftrag.hoehe), Image.LANCZOS)
+        gefunden = ausschnitt_fuer(maske_aus_signalfarbe(bild, self.signalfarbe))
+        if gefunden is None:
+            raise ValueError(f"Keine markierte Fläche: die zu entfernende Fläche muss deckend in der Signalfarbe {self.signalfarbe} stehen")
+        maske, kasten = gefunden
+        teil = bild.crop(kasten).resize((ARBEIT, ARBEIT), Image.LANCZOS)
+        teilmaske = maske.crop(kasten).resize((ARBEIT, ARBEIT), Image.NEAREST)
+        # die Signalfarbe nicht ins Modell geben: dort neutral grau
+        teil.paste((128, 128, 128), (0, 0, ARBEIT, ARBEIT), teilmaske)
+        self._wache.signal = abbruch
+        # mflux liest Bezugsbilder nur aus Dateien: für die Dauer des Auftrags in einem eigenen Ordner, danach weg
+        with tempfile.TemporaryDirectory(prefix="bildwerk-entfernen-") as ordner:
+            foto, weiss = Path(ordner) / "foto.png", Path(ordner) / "maske.png"
+            teil.save(foto)
+            teilmaske.convert("RGB").save(weiss)
+            try:
+                bilder = []
+                for seed in auftrag.seeds:
+                    if abbruch.is_set():
+                        raise Abgebrochen(f"vor Bild {len(bilder) + 1}")
+                    ergebnis = self.m.generate_image(seed=seed, prompt="erase", num_inference_steps=auftrag.schritte,
+                                                     width=ARBEIT, height=ARBEIT, guidance=ANGABEN.guidance, image_paths=[foto, weiss])
+                    bilder.append(zurueckmischen(bild, ergebnis.image, maske, kasten))
+                return bilder
+            finally:
+                self._wache.signal = None

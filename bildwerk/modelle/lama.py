@@ -23,9 +23,10 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from PIL import Image, ImageFilter
+from PIL import Image
 
 from ..bildformat import Aufgabe, Bildauftrag, Groessenregel, Modellangaben, Rechenwerk, Schrittregel, aufgaben_lesen
+from ..entfernen import ausschnitt, maske_aus_signalfarbe, zurueckmischen
 from ..gewichte import Gewichtsstand, Pruefliste, ablage, aus_ordner, pruefen
 from ..unterbau import Abgebrochen, Einstellungen, GewichteFehlen
 from .qwen_image_edit import original_in_papierkorb
@@ -41,13 +42,6 @@ MESSUNG = Path(__file__).resolve().parents[2] / "docs" / "messungen" / "lama.jso
 
 #: Arbeitsgröße des Pakets (fest); größere und kleinere Ausschnitte werden darauf gebracht
 ARBEIT = 800
-#: Abstand eines Pixels von der Signalfarbe (RGB, euklidisch), bis zu dem es als markiert gilt: das Atelier rechnet die
-#: Vorlage weich auf die Rechengröße um, an den Rändern der Fläche mischt sich die Signalfarbe mit dem Bild
-NAEHE = 90
-#: um so viele Pixel wächst die Maske (Saum der weich umgerechneten Kante), dann so weich wird sie zurückgesetzt
-SAUM, WEICH = 3, 2
-#: Umgebung um die Maske im Ausschnitt: so viel ihrer größeren Kante je Seite, mindestens so viele Pixel
-UMGEBUNG_ANTEIL, UMGEBUNG_MIN = 0.6, 48
 
 ANGABEN = Modellangaben(
     kennung="lama",
@@ -74,40 +68,6 @@ ANGABEN = Modellangaben(
     anzahl_max=1,
     aufgaben=aufgaben_lesen(AUFGABEN),
 )
-
-
-def maske_aus_signalfarbe(bild: Image.Image, farbe: tuple[int, int, int], naehe: int = NAEHE, saum: int = SAUM) -> Image.Image:
-    """Die markierte Fläche (Pixel nahe der Signalfarbe), um `saum` Pixel gewachsen, als Graustufenbild 0/255."""
-    import numpy as np
-
-    px = np.asarray(bild.convert("RGB"), dtype=np.int32)
-    abstand = np.sqrt(((px - np.asarray(farbe, dtype=np.int32)) ** 2).sum(axis=2))
-    maske = Image.fromarray(np.where(abstand <= naehe, 255, 0).astype("uint8"), "L")
-    return maske.filter(ImageFilter.MaxFilter(2 * saum + 1)) if saum else maske
-
-
-def ausschnitt(maske: Image.Image) -> tuple[int, int, int, int] | None:
-    """Quadratischer Ausschnitt um die Maske mit Umgebung, im Bild gehalten; None, wenn nichts markiert ist."""
-    kasten = maske.getbbox()
-    if not kasten:
-        return None
-    x0, y0, x1, y1 = kasten
-    kante = max(x1 - x0, y1 - y0)
-    k = min(max(maske.width, maske.height), kante + 2 * max(UMGEBUNG_MIN, round(kante * UMGEBUNG_ANTEIL)))
-    cx, cy = (x0 + x1) // 2, (y0 + y1) // 2
-    ax = min(max(0, cx - k // 2), max(0, maske.width - k))
-    ay = min(max(0, cy - k // 2), max(0, maske.height - k))
-    return ax, ay, min(maske.width, ax + k), min(maske.height, ay + k)
-
-
-def zurueckmischen(original: Image.Image, gefuellt: Image.Image, maske: Image.Image, kasten: tuple[int, int, int, int]) -> Image.Image:
-    """Den gefüllten Ausschnitt nur dort ins Original setzen, wo markiert ist (Kante weich)."""
-    ergebnis = original.convert("RGB").copy()
-    breite, hoehe = kasten[2] - kasten[0], kasten[3] - kasten[1]
-    teil = gefuellt.convert("RGB").resize((breite, hoehe), Image.LANCZOS)
-    weich = maske.crop(kasten).filter(ImageFilter.GaussianBlur(WEICH)) if WEICH else maske.crop(kasten)
-    ergebnis.paste(teil, kasten[:2], weich)
-    return ergebnis
 
 
 def umwandeln(original_loeschen: bool) -> int:

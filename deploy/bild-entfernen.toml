@@ -1,0 +1,23 @@
+# Dienst bild-entfernen: markierte Flächen entfernen mit FLUX.2 klein 4B und dem LoRA erase-v1, in einigen Sekunden, samt
+# Schatten und Spiegelung (ATL-43 des Ateliers). Die Mittelstufe zwischen bild-entfernen-schnell (LaMa) und Qwen-Image-Edit;
+# benannt nach der Fähigkeit (HELF-189), das Modell steht im Steckbrief. Je Prozess genau ein Modell; es lädt beim Start,
+# laufen heißt geladen. Der Dienst startet nie von selbst: Starten und Anhalten nur über den Maschinenraum, wenn die
+# Leitstelle es verlangt.
+# installieren.sh legt diese Datei als ~/Maschinenraum/dienste/bild-entfernen.toml an (ordner auf den Klon gesetzt).
+name = "Bild entfernen (FLUX.2 klein 4B erase)"
+beschreibung = "Markierte Flächen entfernen und mit dem Hintergrund füllen, samt Schatten und Spiegelung, in einigen Sekunden (FLUX.2 klein 4B mit erase-v1); Apache-2.0, frei nutzbar"
+ordner = "~/Entwicklung/Werkzeuge/Bildwerk"
+befehl = [".venv/bin/python", "-m", "bildwerk", "flux2-klein-entfernen", "--port", "$MASCHINENRAUM_PORT"]
+port = 8798
+pruefadresse = "http://127.0.0.1:8798/gesundheit"
+faehigkeiten = ["bild_erzeugen"]
+eignung = []
+sprachen = []
+# Schätzung bis zur ersten Messung: Gewichte 16 GB in bf16, 8 Bit quantisiert rund 9 GB, dazu Rechenspeicher
+speicher_gb = 12
+startzeit_s = 120
+anhaltezeit_s = 15
+
+[umgebung]
+HF_HUB_OFFLINE = "1"
+BILDWERK_QUANTISIERUNG = "8bit"

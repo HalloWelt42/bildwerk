@@ -38,7 +38,8 @@ def erzeugt(aufgabe: str, angabe: str) -> Zelle:
                  eingepasst(Image.open(ZIEL / dienst / "8bit" / aufgabe / f"{dienst}.webp")))
 
 
-def tafel(titel: str, aufgaben_namen: list[str], dienste: list[str], ziel: Path, erzeugen: bool = False) -> Path:
+def tafel(titel: str, aufgaben_namen: list[str], dienste: list[str], ziel: Path, erzeugen: bool = False,
+          spalten: int | None = None) -> Path:
     aufgaben = beispiele.lesen()["aufgabe"]
     zeilen = []
     for name in aufgaben_namen:
@@ -51,18 +52,25 @@ def tafel(titel: str, aufgaben_namen: list[str], dienste: list[str], ziel: Path,
         ergebnisse = [ergebnis(name, d) for d in dienste]
         kopf = f"{a['titel']} ({name})" + (f": {a['wunsch']}" if a.get("wunsch") else "")
         zeilen.append((kopf, ausgang_zellen(name, a, ergebnisse[0].bild.height) + ergebnisse))
-    spalten = max(len(z) for _, z in zeilen)
-    zeile_h = ZEILENKOPF + BILDTEXT + max(c.bild.height for _, z in zeilen for c in z) + LUECKE
-    bild = Image.new("RGB", (spalten * BREITE + (spalten + 1) * LUECKE, KOPF - 30 + len(zeilen) * zeile_h), "white")
+    # höchstens "spalten" Kacheln je Bildzeile; was nicht passt, bricht in die nächste Zeile um (Überschrift nur oben)
+    spalten = spalten or max(len(z) for _, z in zeilen)
+    reihen = [(kopf if s == 0 else None, zellen[s:s + spalten]) for kopf, zellen in zeilen
+              for s in range(0, len(zellen), spalten)]
+    bild_h = max(c.bild.height for _, z in zeilen for c in z)
+    hoehen = [(ZEILENKOPF if kopf is not None else 0) + BILDTEXT + bild_h + LUECKE for kopf, _ in reihen]
+    bild = Image.new("RGB", (spalten * BREITE + (spalten + 1) * LUECKE, KOPF - 30 + sum(hoehen)), "white")
     d = ImageDraw.Draw(bild)
     d.text((LUECKE, 10), titel, fill="black", font=schrift(26))
-    for i, (kopf, zellen) in enumerate(zeilen):
-        y = KOPF - 30 + i * zeile_h
-        d.text((LUECKE, y + 6), kopf, fill="black", font=schrift(20))
+    y = KOPF - 30
+    for (kopf, zellen), hoehe in zip(reihen, hoehen):
+        if kopf is not None:
+            d.text((LUECKE, y + 6), kopf, fill="black", font=schrift(20))
+            y += ZEILENKOPF
         for s, zelle in enumerate(zellen):
             x = LUECKE + s * (BREITE + LUECKE)
-            d.text((x, y + ZEILENKOPF), zelle.text, fill="#333", font=schrift(16))
-            bild.paste(zelle.bild, (x, y + ZEILENKOPF + BILDTEXT))
+            d.text((x, y), zelle.text, fill="#333", font=schrift(16))
+            bild.paste(zelle.bild, (x, y + BILDTEXT))
+        y += hoehe - (ZEILENKOPF if kopf is not None else 0)
     bild.save(ziel, quality=85)
     return ziel
 
@@ -74,8 +82,9 @@ def main() -> int:
     p.add_argument("--aufgabe", action="append", required=True)
     p.add_argument("--dienst", action="append", required=True)
     p.add_argument("--erzeugen", action="store_true", help="Erzeuger an den Motiven statt Bearbeiter am Ausgangsbild")
+    p.add_argument("--spalten", type=int, help="höchstens so viele Kacheln je Bildzeile, Rest bricht um")
     a = p.parse_args()
-    print(tafel(a.titel, a.aufgabe, a.dienst, a.ziel, a.erzeugen))
+    print(tafel(a.titel, a.aufgabe, a.dienst, a.ziel, a.erzeugen, a.spalten))
     return 0
 
 

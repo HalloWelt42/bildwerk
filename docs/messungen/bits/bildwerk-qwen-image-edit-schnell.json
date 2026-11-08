@@ -1,0 +1,52 @@
+{
+ "dienst": "bildwerk-qwen-image-edit-schnell",
+ "modell": "qwen-image-edit",
+ "gemessen_am": "2026-11-08T03:30:33+00:00",
+ "schritte": null,
+ "bits": {
+  "8": {
+   "dauer_s": {
+    "anweisen": 389.47,
+    "entfernen": 446.81,
+    "fuellen": 369.97,
+    "einpassen": 410.19,
+    "erweitern": 389.0
+   },
+   "spitze_gb": 39.81,
+   "ablage_gb": 37.5
+  },
+  "4": {
+   "dauer_s": {
+    "anweisen": 379.04,
+    "entfernen": 397.47,
+    "fuellen": 385.4,
+    "einpassen": 365.32,
+    "erweitern": 408.26
+   },
+   "spitze_gb": 38.22,
+   "ablage_gb": 29.0
+  }
+ },
+ "abweichung_4_zu_8": {
+  "anweisen": {
+   "mittel": 7.96,
+   "psnr_db": 26.2
+  },
+  "einpassen": {
+   "mittel": 4.69,
+   "psnr_db": 29.1
+  },
+  "entfernen": {
+   "mittel": 8.44,
+   "psnr_db": 26.1
+  },
+  "erweitern": {
+   "mittel": 7.87,
+   "psnr_db": 26.6
+  },
+  "fuellen": {
+   "mittel": 7.88,
+   "psnr_db": 24.7
+  }
+ }
+}

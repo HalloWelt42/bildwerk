@@ -1,27 +1,52 @@
 {
  "dienst": "bildwerk-moss-image",
  "modell": "moss-image",
- "gemessen_am": "2026-11-07T19:34:09+00:00",
+ "gemessen_am": "2026-11-08T04:47:07+00:00",
+ "schritte": 30,
  "bits": {
   "8": {
    "dauer_s": {
-    "entfernen": 526.82
+    "entfernen": 541.74,
+    "fuellen": 546.0,
+    "erweitern": 575.46,
+    "anweisen": 560.55,
+    "einpassen": 538.41
    },
-   "spitze_gb": 17.71,
+   "spitze_gb": 15.84,
    "ablage_gb": 14.0
   },
   "4": {
    "dauer_s": {
-    "entfernen": 509.09
+    "entfernen": 586.43,
+    "fuellen": 581.38,
+    "erweitern": 565.79,
+    "anweisen": 573.82,
+    "einpassen": 574.16
    },
-   "spitze_gb": 17.71,
+   "spitze_gb": 10.66,
    "ablage_gb": 7.5
   }
  },
  "abweichung_4_zu_8": {
+  "anweisen": {
+   "mittel": 49.99,
+   "psnr_db": 12.3
+  },
+  "einpassen": {
+   "mittel": 39.07,
+   "psnr_db": 14.2
+  },
   "entfernen": {
    "mittel": 40.51,
    "psnr_db": 13.6
+  },
+  "erweitern": {
+   "mittel": 39.88,
+   "psnr_db": 14.3
+  },
+  "fuellen": {
+   "mittel": 60.38,
+   "psnr_db": 10.6
   }
  }
 }

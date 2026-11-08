@@ -1,0 +1,10 @@
+{
+ "dienst": "bildwerk-qwen-image-edit-schnell",
+ "name": "Qwen-Image-Edit-2511 schnell",
+ "aufgabe": "fuellen",
+ "anweisung": "Replace the solid magenta area completely with: a ceramic vase with fresh sunflowers. Keep everything outside it exactly as it is. No magenta may remain in the result.",
+ "dauer_s": 385.4,
+ "bis_antwort_s": 385.59,
+ "schritte": 8,
+ "gerechnet_am": "2026-11-08T04:19:06+00:00"
+}

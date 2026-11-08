@@ -1,0 +1,10 @@
+{
+ "dienst": "bildwerk-qwen-image-edit-schnell",
+ "name": "Qwen-Image-Edit-2511 schnell",
+ "aufgabe": "einpassen",
+ "anweisung": "Some objects were pasted into this photo and do not fit in yet. The pasted object is: the ceramic lamp. Make every pasted object look like a natural part of the scene: match the lighting direction, colour, contrast, sharpness and grain, add fitting shadows and contact with the surface it stands on, and blend its edges. Keep its shape, position and size. Do not add, remove or move anything else, and keep the rest of the image exactly as it is.",
+ "dauer_s": 365.32,
+ "bis_antwort_s": 365.55,
+ "schritte": 8,
+ "gerechnet_am": "2026-11-08T04:38:21+00:00"
+}

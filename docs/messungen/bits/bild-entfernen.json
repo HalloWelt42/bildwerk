@@ -1,20 +1,21 @@
 {
  "dienst": "bild-entfernen",
  "modell": "flux2-klein-entfernen",
- "gemessen_am": "2026-11-07T19:25:38+00:00",
+ "gemessen_am": "2026-11-08T04:38:40+00:00",
+ "schritte": null,
  "bits": {
   "8": {
    "dauer_s": {
-    "entfernen": 185.2
+    "entfernen": 203.49
    },
-   "spitze_gb": 11.81,
+   "spitze_gb": 5.98,
    "ablage_gb": 8.6
   },
   "4": {
    "dauer_s": {
-    "entfernen": 202.62
+    "entfernen": 201.88
    },
-   "spitze_gb": 11.81,
+   "spitze_gb": 4.0,
    "ablage_gb": 4.6
   }
  },

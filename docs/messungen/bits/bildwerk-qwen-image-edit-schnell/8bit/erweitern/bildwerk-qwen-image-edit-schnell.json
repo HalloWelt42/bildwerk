@@ -1,0 +1,10 @@
+{
+ "dienst": "bildwerk-qwen-image-edit-schnell",
+ "name": "Qwen-Image-Edit-2511 schnell",
+ "aufgabe": "erweitern",
+ "anweisung": "Replace the solid magenta border completely so that it matches the surrounding image naturally (same light, perspective, texture and grain). Keep everything outside it exactly as it is. No magenta may remain in the result.",
+ "dauer_s": 389.0,
+ "bis_antwort_s": 389.5,
+ "schritte": 8,
+ "gerechnet_am": "2026-11-08T03:51:36+00:00"
+}

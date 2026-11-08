@@ -1,0 +1,10 @@
+{
+ "dienst": "bildwerk-qwen-image-edit-schnell",
+ "name": "Qwen-Image-Edit-2511 schnell",
+ "aufgabe": "entfernen",
+ "anweisung": "Fill the solid magenta area with what would naturally be behind it, continuing the surrounding scene seamlessly (same light, perspective, texture and grain). Do not add any new object, person or text. Keep everything outside it exactly as it is. No magenta may remain in the result.",
+ "dauer_s": 397.47,
+ "bis_antwort_s": 412.6,
+ "schritte": 8,
+ "gerechnet_am": "2026-11-08T04:12:40+00:00"
+}

@@ -3,8 +3,8 @@
  "name": "Bild entfernen (FLUX.2 klein 4B erase)",
  "aufgabe": "entfernen",
  "anweisung": "Remove the marked area.",
- "dauer_s": 202.62,
- "bis_antwort_s": 205.92,
+ "dauer_s": 201.88,
+ "bis_antwort_s": 205.58,
  "schritte": 4,
- "gerechnet_am": "2026-11-07T19:33:16+00:00"
+ "gerechnet_am": "2026-11-08T04:46:48+00:00"
 }

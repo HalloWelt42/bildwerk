@@ -1,0 +1,68 @@
+{
+  "repo": "black-forest-labs/flux-3-image-klein",
+  "revision": "8454017f9ebaada30c998fccd9f67a80c7580f68",
+  "lizenz": "FLUX Kommunity License v1.0",
+  "lokal": "bild/mflux/flux3-image-klein-8bit",
+  "dateien": [
+    {
+      "pfad": "text_encoder/0.safetensors",
+      "groesse": 2145931311,
+      "sha256": "8e48e90d97a8558101f8fec1003048c2085dccbbffd569eb91be2f52af8c7ba7"
+    },
+    {
+      "pfad": "text_encoder/1.safetensors",
+      "groesse": 1699235180,
+      "sha256": "34e64c32ba88327acbf867672c65c0b69296c0b43dab8de335c0f64046414e83"
+    },
+    {
+      "pfad": "text_encoder/chat_template.jinja",
+      "groesse": 5292,
+      "sha256": "3636d0f0bd6bef02654cdffdc447b79cb2cef8ab02cc75267345946291a489e4"
+    },
+    {
+      "pfad": "text_encoder/model.safetensors.index.json",
+      "groesse": 45636,
+      "sha256": "db3b01feaed64804a09794244bf574a71acb21b0855ec514f12b159cd8f9e784"
+    },
+    {
+      "pfad": "text_encoder/tokenizer.json",
+      "groesse": 11422650,
+      "sha256": "be75606093db2094d7cd20f3c2f385c212750648bd6ea4fb2bf507a6a4c55506"
+    },
+    {
+      "pfad": "text_encoder/tokenizer_config.json",
+      "groesse": 692,
+      "sha256": "e1125421b81c2eedb6bf0e40a4aea9558d788018fd5bd19a21f2233839edf164"
+    },
+    {
+      "pfad": "transformer/0.safetensors",
+      "groesse": 2134962920,
+      "sha256": "07318e4eda9bbca8c31f92fa826ed8e01b3c7f6d21fb29033341830f97fa4f17"
+    },
+    {
+      "pfad": "transformer/1.safetensors",
+      "groesse": 2145827161,
+      "sha256": "2e6e0392ee1e33621650aa5b93b8b01a5612926b43777f07785272aecbe03624"
+    },
+    {
+      "pfad": "transformer/2.safetensors",
+      "groesse": 1614802548,
+      "sha256": "027c8e5bb27656248ba77fa67e8eb3dd97972a25ace3f114b2eead042c2f4581"
+    },
+    {
+      "pfad": "transformer/model.safetensors.index.json",
+      "groesse": 61760,
+      "sha256": "236cb93bb6f2e4a710f348c6101de1b49605f8d4d9c05142ee569baacb706ce9"
+    },
+    {
+      "pfad": "vae/0.safetensors",
+      "groesse": 166156496,
+      "sha256": "f420463341ac563c766294790668d7c787020827a22b81929ceb650300b7eebe"
+    },
+    {
+      "pfad": "vae/model.safetensors.index.json",
+      "groesse": 17547,
+      "sha256": "4d629a6165dd5fc0fdca676c981ee5be480f1ac61ed6c012e1c9b34d3e0f4e09"
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "repo": "Qwen/Qwen-Image-2.1-Turbo",
+  "revision": "fc13ba1986fcb905854dc8de2f52eee395f49b5b",
+  "lizenz": "Qwen Research License",
+  "lokal": "bild/mflux/qwen-image-2.1-turbo-fuellen-8bit",
+  "dateien": [
+    {
+      "pfad": "controlnet/0.safetensors",
+      "groesse": 2139199804,
+      "sha256": "5d72db962f6680b185253d54d201acadeb278a38c0a2b2ce5b656da9938ca70c"
+    },
+    {
+      "pfad": "controlnet/1.safetensors",
+      "groesse": 1872864820,
+      "sha256": "192032468a7f4616713c3041f351c120df1aa9e8f82cdde5c91de8cfb5059435"
+    },
+    {
+      "pfad": "controlnet/model.safetensors.index.json",
+      "groesse": 26612,
+      "sha256": "c6d55b55b0c6ee28f42513e0d42882d274b54edcc3cc211a0730d238983eeb47"
+    },
+    {
+      "pfad": "model_index.json",
+      "groesse": 578,
+      "sha256": "97e2febeb19d93cb41fa44807cde8bd42757950b5dffeacdb0331fb2d390cf20"
+    },
+    {
+      "pfad": "processor/chat_template.jinja",
+      "groesse": 5292,
+      "sha256": "3636d0f0bd6bef02654cdffdc447b79cb2cef8ab02cc75267345946291a489e4"
+    },
+    {
+      "pfad": "processor/preprocessor_config.json",
+      "groesse": 478,
+      "sha256": "f64372eb108d4db5fae4ae87c48ecc16a40410771a1e9e1e1acf2ed91c106383"
+    },
+    {
+      "pfad": "processor/tokenizer.json",
+      "groesse": 11422650,
+      "sha256": "be75606093db2094d7cd20f3c2f385c212750648bd6ea4fb2bf507a6a4c55506"
+    },
+    {
+      "pfad": "processor/tokenizer_config.json",
+      "groesse": 733,
+      "sha256": "15d9c5ecb9cfd3c63e5be36629d00b7e21f32ce7c54037fc7fdb02033bca1d13"
+    },
+    {
+      "pfad": "scheduler/scheduler_config.json",
+      "groesse": 486,
+      "sha256": "16c948c71f9152a34cce6e3a2f309e97ad2dca32beecbe5e2fd3a7925b7eb4bb"
+    },
+    {
+      "pfad": "text_encoder/0.safetensors",
+      "groesse": 2140924995,
+      "sha256": "e2ad0a77c0f8ae282ebeef446bc9ca09be9b7c2d8712fca8e0185b64037fd201"
+    },
+    {
+      "pfad": "text_encoder/1.safetensors",
+      "groesse": 2103643586,
+      "sha256": "79d974ad19d3734aea9c2890cfd7a17b9a62fd564bcd4f01f819f76622a3e08c"
+    },
+    {
+      "pfad": "text_encoder/2.safetensors",
+      "groesse": 2103643537,
+      "sha256": "ca17c8b1bb4a5aa284e7804848dcaf72ed439082a6731001539d55f22c2a2157"
+    },
+    {
+      "pfad": "text_encoder/3.safetensors",
+      "groesse": 2143616134,
+      "sha256": "5ec126e465612bbbe79e78a16b68911b123571bd328ed02d98db1f003aa5a424"
+    },
+    {
+      "pfad": "text_encoder/4.safetensors",
+      "groesse": 951295058,
+      "sha256": "64d3ea6683e79c0908c8933fd63853236e68f4b1ef84df00ed762f619c67e315"
+    },
+    {
+      "pfad": "text_encoder/config.json",
+      "groesse": 1541,
+      "sha256": "b45aff957d1f5c51c541950ab9ef59fa733ce39fdc2d8ec3d7353e5691afedab"
+    },
+    {
+      "pfad": "text_encoder/model.safetensors.index.json",
+      "groesse": 95963,
+      "sha256": "c2fea0e128a587bc1382c5a3239b4e7f9133562864077fb3dfa496c17ef27b0c"
+    },
+    {
+      "pfad": "transformer/0.safetensors",
+      "groesse": 2131021969,
+      "sha256": "a1c6924b8e99f5bcc06fd03aa0e1c924b73a33739e73cb472cd7a80ce4a71467"
+    },
+    {
+      "pfad": "transformer/1.safetensors",
+      "groesse": 2139124143,
+      "sha256": "d93c405051fb092b816812cd97e38e76a48e7b5f00c0e20d515e34806e05a438"
+    },
+    {
+      "pfad": "transformer/2.safetensors",
+      "groesse": 2139124261,
+      "sha256": "9dbd56d9389f3f17c24c163a64b1b4b6dc27fa46362dd284fa6a518cb7f24968"
+    },
+    {
+      "pfad": "transformer/3.safetensors",
+      "groesse": 1246003511,
+      "sha256": "b2907f73d4c8141f012c52550fd6e670f3d7017f088bd37379fe50ae09103bf2"
+    },
+    {
+      "pfad": "transformer/config.json",
+      "groesse": 369,
+      "sha256": "da2c2a64d6c1c7655813284363e88e9376808cf7e9bebb115d9121758cc07e07"
+    },
+    {
+      "pfad": "transformer/model.safetensors.index.json",
+      "groesse": 48913,
+      "sha256": "df9044b1b4f13d8f60d6f636f09abd36e28e396bcc5ed23ca2c0808c7f7e2674"
+    },
+    {
+      "pfad": "vae/0.safetensors",
+      "groesse": 675508168,
+      "sha256": "7863895fcf5358bfe3b03ad4c8cb6d6f084d5c01c418cca862fa9f0ee5dc7e36"
+    },
+    {
+      "pfad": "vae/config.json",
+      "groesse": 2171,
+      "sha256": "c6ca6522d7793032d99b9e40be14823d8c96fb61f1957e04f7bec89737be661c"
+    },
+    {
+      "pfad": "vae/model.safetensors.index.json",
+      "groesse": 15902,
+      "sha256": "296e37704a971b8bd7e31da3d767e89537394000daa8d9a43394817eb5b6af3f"
+    }
+  ]
+}

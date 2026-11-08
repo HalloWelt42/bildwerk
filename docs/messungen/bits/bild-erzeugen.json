@@ -1,0 +1,52 @@
+{
+ "dienst": "bild-erzeugen",
+ "modell": "flux3-klein",
+ "gemessen_am": "2026-11-08T01:29:34+00:00",
+ "schritte": null,
+ "bits": {
+  "8": {
+   "dauer_s": {
+    "entfernen": 104.26,
+    "fuellen": 101.34,
+    "erweitern": 109.66,
+    "anweisen": 114.87,
+    "einpassen": 108.2
+   },
+   "spitze_gb": 11.74,
+   "ablage_gb": 9.9
+  },
+  "4": {
+   "dauer_s": {
+    "entfernen": 99.05,
+    "fuellen": 112.92,
+    "erweitern": 97.56,
+    "anweisen": 114.17,
+    "einpassen": 99.57
+   },
+   "spitze_gb": 7.78,
+   "ablage_gb": 5.3
+  }
+ },
+ "abweichung_4_zu_8": {
+  "anweisen": {
+   "mittel": 18.68,
+   "psnr_db": 18.6
+  },
+  "einpassen": {
+   "mittel": 14.22,
+   "psnr_db": 21.3
+  },
+  "entfernen": {
+   "mittel": 28.92,
+   "psnr_db": 15.2
+  },
+  "erweitern": {
+   "mittel": 17.55,
+   "psnr_db": 19.9
+  },
+  "fuellen": {
+   "mittel": 12.52,
+   "psnr_db": 21.6
+  }
+ }
+}

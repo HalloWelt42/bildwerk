@@ -21,6 +21,7 @@ import os
 import re
 import sys
 import time
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -91,11 +92,33 @@ def spitzen_verwerfen(dienst: str) -> None:
         raise SystemExit(f"{dienst}: Arbeitsspitzen nicht verworfen ({r.text[:200]}): Messung ungültig")
 
 
+#: so oft eine Lücke der Leitstelle (Neustart beim Ausrollen) abwarten
+LUECKE_VERSUCHE, LUECKE_WARTEN_S = 20, 15
+
+
+def beharrlich(anfrage: Callable[[], httpx.Response]) -> httpx.Response:
+    """Eine Anfrage an die Leitstelle, die eine kurze Lücke übersteht. Das Ausrollen der Leitstelle wartet, bis sie ruht,
+    und trifft so genau die Pause zwischen zwei Durchgängen (08.11.2026 dreimal, jede Reihe brach am Ende ab)."""
+    for versuch in range(1, LUECKE_VERSUCHE + 1):
+        try:
+            r = anfrage()
+            if r.status_code not in (502, 503):
+                return r.raise_for_status()
+            grund = f"{r.status_code}"
+        except httpx.TransportError as f:
+            grund = type(f).__name__
+        if versuch == LUECKE_VERSUCHE:
+            raise SystemExit(f"Leitstelle bleibt unerreichbar ({grund})")
+        print(f"Leitstelle nicht erreichbar ({grund}), warte {LUECKE_WARTEN_S} s ...", flush=True)
+        time.sleep(LUECKE_WARTEN_S)
+    raise AssertionError("unerreichbar")
+
+
 def entladen(verwaltung: str, dienst: str) -> None:
     """Den Dienst über die Leitstelle entladen und warten, bis der Maschinenraum ihn als aus meldet."""
-    lage = httpx.get(f"{verwaltung}/api/lage", verify=False, timeout=15).json()
+    lage = beharrlich(lambda: httpx.get(f"{verwaltung}/api/lage", verify=False, timeout=15)).json()
     modell = next(m["kennung"] for m in lage["modelle"] if m.get("familie") == dienst)
-    httpx.post(f"{verwaltung}/api/modelle/{modell}/entladen", verify=False, timeout=60)
+    beharrlich(lambda: httpx.post(f"{verwaltung}/api/modelle/{modell}/entladen", verify=False, timeout=60))
     for _ in range(120):
         if stand(dienst)["zustand"] == "aus":
             return
@@ -109,7 +132,7 @@ WARTEN_NACH_UMSTELLEN_S = 30
 
 def gerechnet_mit(c: httpx.Client, dienst: str) -> str | None:
     """Die Genauigkeit, die der Dienst bei seinem letzten Start im Steckbrief gemeldet hat (laut Leitstelle)."""
-    for m in c.get("/v1/models").json()["data"]:
+    for m in beharrlich(lambda: c.get("/v1/models")).json()["data"]:
         if m["id"] == dienst:
             return ((m.get("x-leitstelle") or {}).get("steckbrief") or {}).get("quantisierung")
     return None
@@ -144,7 +167,7 @@ def main() -> int:
     vorher = einstellen(a.dienst, BITS[0])
     try:
         with httpx.Client(base_url=adresse, headers={"Authorization": f"Bearer {schluessel}"}, timeout=httpx.Timeout(3600, connect=10)) as c:
-            bearbeitet = any(x["kennung"] == a.dienst and "bild_bearbeiten" in x.get("faehigkeiten", []) for x in c.get("/v1/dienste").json()["data"])
+            bearbeitet = any(x["kennung"] == a.dienst and "bild_bearbeiten" in x.get("faehigkeiten", []) for x in beharrlich(lambda: c.get("/v1/dienste")).json()["data"])
             for bits in BITS:
                 einstellen(a.dienst, bits)
                 time.sleep(WARTEN_NACH_UMSTELLEN_S)

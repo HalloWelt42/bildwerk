@@ -1,0 +1,10 @@
+{
+ "dienst": "bild-fuellen",
+ "name": "Bild füllen (Qwen-Image 2.1 Turbo mit Maske)",
+ "aufgabe": "fuellen",
+ "anweisung": "a ceramic vase with fresh sunflowers, fitting naturally into the surrounding scene with matching light, shadows, perspective and photographic style.",
+ "dauer_s": 239.81,
+ "bis_antwort_s": 239.96,
+ "schritte": 8,
+ "gerechnet_am": "2026-11-08T01:29:15+00:00"
+}

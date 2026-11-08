@@ -1,0 +1,34 @@
+{
+ "dienst": "bild-fuellen",
+ "modell": "qwen21-fuellen",
+ "gemessen_am": "2026-11-08T01:10:10+00:00",
+ "schritte": null,
+ "bits": {
+  "8": {
+   "dauer_s": {
+    "entfernen": 293.96,
+    "fuellen": 278.46
+   },
+   "spitze_gb": 24.22,
+   "ablage_gb": 21.8
+  },
+  "4": {
+   "dauer_s": {
+    "entfernen": 244.38,
+    "fuellen": 239.81
+   },
+   "spitze_gb": 18.16,
+   "ablage_gb": 12.1
+  }
+ },
+ "abweichung_4_zu_8": {
+  "entfernen": {
+   "mittel": 3.0,
+   "psnr_db": 32.6
+  },
+  "fuellen": {
+   "mittel": 1.2,
+   "psnr_db": 32.3
+  }
+ }
+}

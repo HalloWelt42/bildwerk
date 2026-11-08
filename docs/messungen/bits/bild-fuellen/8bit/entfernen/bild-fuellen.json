@@ -1,0 +1,10 @@
+{
+ "dienst": "bild-fuellen",
+ "name": "Bild füllen (Qwen-Image 2.1 Turbo mit Maske)",
+ "aufgabe": "entfernen",
+ "anweisung": "The empty background that continues the surrounding scene seamlessly, same light, texture and perspective; no objects, no people.",
+ "dauer_s": 293.96,
+ "bis_antwort_s": 299.32,
+ "schritte": 8,
+ "gerechnet_am": "2026-11-08T01:15:42+00:00"
+}

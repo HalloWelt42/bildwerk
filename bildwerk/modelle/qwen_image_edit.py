@@ -27,18 +27,19 @@ from typing import Any
 from PIL import Image
 
 from ..bildformat import Bildauftrag, Groessenregel, Modellangaben, Schrittregel, aufgaben_lesen
-from ..gewichte import Gewichtsstand, Pruefliste, ablage, aus_ordner, pruefen
+from ..eigene_ablage import liste_zu, ort
+from ..eigene_ablage import lesen as ablage_lesen
+from ..gewichte import Gewichtsstand, Pruefliste, ablage, pruefen
 from ..unterbau import Abgebrochen, Einstellungen, GewichteFehlen, Quantisierung
 from .moss_image import Abbruchwache
 
 PORT = 8795
-#: die eigene, quantisierte Ablage, aus der der Dienst lädt (Prüfliste entsteht beim Umwandeln)
-PRUEFLISTE = Path(__file__).with_name("qwen_image_edit_8bit.json")
 #: was aus Hugging Face geladen und umgewandelt wird
 PRUEFLISTE_QUELLE = Path(__file__).with_name("qwen_image_edit.json")
-#: Ort der eigenen Ablage relativ zur Modellablage
-LOKAL = "bild/mflux/qwen-image-edit-2511-8bit"
-BITS = 8
+#: die eigene Ablage je Bitbreite (MR-5); der Dienst lädt nur daraus, in der Bitbreite seiner Einstellung (Vorgabe 8 Bit)
+BASIS, BITS = "qwen-image-edit-2511", 8
+LOKAL = ort(BASIS, BITS)
+PRUEFLISTE = liste_zu(Path(__file__), "qwen_image_edit", BITS)
 #: wie das Modell Aufgaben (Entfernen, Füllen, Erweitern, frei) als Anweisung bekommt; Text, kein Code
 AUFGABEN = Path(__file__).with_name("qwen_image_edit.aufgaben.toml")
 
@@ -118,41 +119,35 @@ def original_in_papierkorb(wo: Path, repo: str, papierkorb: Path | None = None) 
     return ziel
 
 
-def umwandeln(original_loeschen: bool) -> int:
-    """Aus dem Original im Zwischenspeicher auf 8 Bit in die eigene Ablage speichern, Prüfliste schreiben, Probeladen aus
-    der eigenen Ablage. Mit `original_loeschen` kommt das Original nur in den Papierkorb, wenn eine Messung belegt, dass
-    die eigene Ablage rechnet; sonst sagt der Befehl, was fehlt. Rechnet selbst kein Bild."""
-    import gc
-
+def bauen(bits: int = BITS) -> Any:
     from mflux.models.common.config import ModelConfig
     from mflux.models.qwen.variants.edit.qwen_image_edit import QwenImageEdit
 
+    return QwenImageEdit(quantize=bits, model_config=ModelConfig.qwen_image_edit_2511())
+
+
+def aus_ablage(ordner: str) -> Any:
+    from mflux.models.common.config import ModelConfig
+    from mflux.models.qwen.variants.edit.qwen_image_edit import QwenImageEdit
+
+    return QwenImageEdit(model_path=ordner, model_config=ModelConfig.qwen_image_edit_2511())
+
+
+def umwandeln(original_loeschen: bool, bits: int = BITS) -> int:
+    """Die eigene Ablage einer Bitbreite bauen (bildwerk umwandeln qwen-image-edit [--bits 4]), Prüfliste schreiben,
+    Probeladen. Mit `original_loeschen` kommt das Original nur in den Papierkorb, wenn eine Messung belegt, dass die eigene
+    Ablage rechnet; sonst sagt der Befehl, was fehlt. Rechnet selbst kein Bild."""
+    from ..eigene_ablage import umwandeln as bauen_und_speichern
+
     quelle = Pruefliste.lesen(PRUEFLISTE_QUELLE)
-    wo = ablage()
-    stand = pruefen(quelle, wo)
-    if not stand.vollstaendig:
-        print(f"{stand.meldung}. Zuerst: bildwerk gewichte {ANGABEN.kennung} --laden")
-        return 1
-    ziel = wo.parent / LOKAL
-    if not (ziel.is_dir() and any(ziel.iterdir())):
-        print(f"speichere {BITS} Bit nach {ziel} ...", flush=True)
-        m = QwenImageEdit(quantize=BITS, model_config=ModelConfig.qwen_image_edit_2511())
-        m.save_model(str(ziel))
-        del m
-        gc.collect()
-    liste = aus_ordner(ziel, quelle, LOKAL)
-    liste.schreiben(PRUEFLISTE)
-    print(f"{PRUEFLISTE.name}: {len(liste.dateien)} Dateien, {liste.groesse / 1e9:.1f} GB in {ziel}", flush=True)
-    print("lade zur Probe aus der eigenen Ablage ...", flush=True)
-    m = QwenImageEdit(model_path=str(ziel), model_config=ModelConfig.qwen_image_edit_2511())
-    del m
-    gc.collect()
-    print("Probeladen gelungen")
-    if original_loeschen:
-        if not gerechnet():
-            print(f"Original bleibt: erst über die Leitstelle messen (tools/messen.py qwen-image-edit), dann erneut mit --original-loeschen")
-            return 3
-        print(f"Original im Papierkorb: {original_in_papierkorb(wo, quelle.repo)}")
+    erfolg = bauen_und_speichern(ANGABEN.kennung, quelle, liste_zu(Path(__file__), "qwen_image_edit", bits), ort(BASIS, bits),
+                                 lambda: bauen(bits), aus_ablage)
+    if erfolg or not original_loeschen:
+        return erfolg
+    if not gerechnet():
+        print(f"Original bleibt: erst über die Leitstelle messen (tools/messen.py qwen-image-edit), dann erneut mit --original-loeschen")
+        return 3
+    print(f"Original im Papierkorb: {original_in_papierkorb(ablage(), quelle.repo)}")
     return 0
 
 
@@ -162,10 +157,11 @@ class Motor:
     angaben = ANGABEN
 
     def __init__(self, einstellungen: Einstellungen) -> None:
-        # die Ablage ist schon quantisiert; die Einstellung des Dienstes gilt hier nicht
-        self.quantisierung: Quantisierung = Quantisierung.Q8
-        self.pruefliste = Pruefliste.lesen(PRUEFLISTE) if PRUEFLISTE.is_file() else Pruefliste(
-            repo="Qwen/Qwen-Image-Edit-2511", revision="", lizenz=ANGABEN.lizenz, lokal=LOKAL, dateien=[])
+        # die Ablage ist schon quantisiert; die Einstellung des Dienstes wählt nur, aus welcher Ablage geladen wird
+        bits = einstellungen.quantisierung.bits or BITS
+        self.quantisierung: Quantisierung = Quantisierung(f"{bits}bit")
+        self.pruefliste = ablage_lesen(liste_zu(Path(__file__), "qwen_image_edit", bits), "Qwen/Qwen-Image-Edit-2511",
+                                       ANGABEN.lizenz, ort(BASIS, bits))
         self.m: Any = None
         self._wache = Abbruchwache()
 
@@ -179,7 +175,7 @@ class Motor:
         stand = self.gewichte()
         if not stand.vollstaendig:
             raise GewichteFehlen(f"{stand.meldung}. Laden und umwandeln von Hand: bildwerk gewichte {ANGABEN.kennung} --laden, "
-                                 f"dann bildwerk umwandeln {ANGABEN.kennung} --original-loeschen")
+                                 f"dann bildwerk umwandeln {ANGABEN.kennung} --bits {self.quantisierung.bits}")
         from mflux.models.common.config import ModelConfig
         from mflux.models.qwen.variants.edit.qwen_image_edit import QwenImageEdit
 

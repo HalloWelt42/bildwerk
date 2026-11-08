@@ -1,0 +1,58 @@
+{
+  "repo": "black-forest-labs/flux-3-image-klein",
+  "revision": "8454017f9ebaada30c998fccd9f67a80c7580f68",
+  "lizenz": "FLUX Kommunity License v1.0",
+  "lokal": "bild/mflux/flux3-image-klein-4bit",
+  "dateien": [
+    {
+      "pfad": "text_encoder/0.safetensors",
+      "groesse": 2035881242,
+      "sha256": "45044a1899ac092dc3b8a26fb0588d8d4cb52726f4e0dcbf6fc6093e0988579f"
+    },
+    {
+      "pfad": "text_encoder/chat_template.jinja",
+      "groesse": 5292,
+      "sha256": "3636d0f0bd6bef02654cdffdc447b79cb2cef8ab02cc75267345946291a489e4"
+    },
+    {
+      "pfad": "text_encoder/model.safetensors.index.json",
+      "groesse": 45636,
+      "sha256": "d4b942ce0c69fb80a29203c842e34963d0ec8d3dd1bfca5f3a319eed4975473d"
+    },
+    {
+      "pfad": "text_encoder/tokenizer.json",
+      "groesse": 11422650,
+      "sha256": "be75606093db2094d7cd20f3c2f385c212750648bd6ea4fb2bf507a6a4c55506"
+    },
+    {
+      "pfad": "text_encoder/tokenizer_config.json",
+      "groesse": 692,
+      "sha256": "e1125421b81c2eedb6bf0e40a4aea9558d788018fd5bd19a21f2233839edf164"
+    },
+    {
+      "pfad": "transformer/0.safetensors",
+      "groesse": 2144245479,
+      "sha256": "62c72cfbbb1355061981f32770a66a69ac39c71179c26f19dbbee6a1234bb739"
+    },
+    {
+      "pfad": "transformer/1.safetensors",
+      "groesse": 977011460,
+      "sha256": "1008f3cefbc0535c46a221eb4d8628dbac035a7c8168e48419b097e0067c3d2d"
+    },
+    {
+      "pfad": "transformer/model.safetensors.index.json",
+      "groesse": 61760,
+      "sha256": "a7bc3c466f4651fe10a802c8638ef75da9958360d015e2435388bcc98364e99a"
+    },
+    {
+      "pfad": "vae/0.safetensors",
+      "groesse": 165107912,
+      "sha256": "52affd01aa5b87db1c17c391e45aed9bdd4ce896f10182ca8720b58584941129"
+    },
+    {
+      "pfad": "vae/model.safetensors.index.json",
+      "groesse": 17547,
+      "sha256": "e396f8330c32db97a3b0379ba4642387dd45c669546d4221375f36e57bb7116e"
+    }
+  ]
+}

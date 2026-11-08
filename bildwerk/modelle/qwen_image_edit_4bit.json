@@ -1,0 +1,113 @@
+{
+  "repo": "Qwen/Qwen-Image-Edit-2511",
+  "revision": "6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9",
+  "lizenz": "Apache-2.0",
+  "lokal": "bild/mflux/qwen-image-edit-2511-4bit",
+  "dateien": [
+    {
+      "pfad": "text_encoder/0.safetensors",
+      "groesse": 2080974775,
+      "sha256": "84dd8889494d669f8f25bd25a7c595657298ab30727cd14f3362e6636de4e0d9"
+    },
+    {
+      "pfad": "text_encoder/1.safetensors",
+      "groesse": 2136050841,
+      "sha256": "a39ee86dd225062cc90014c17d967249e38e26298fa9348a1943221156b61c07"
+    },
+    {
+      "pfad": "text_encoder/2.safetensors",
+      "groesse": 2059005337,
+      "sha256": "aacd6c0842f3b0d1f7a02f3b5666022b71acf723bee91c06a624949700b44b64"
+    },
+    {
+      "pfad": "text_encoder/3.safetensors",
+      "groesse": 2136050889,
+      "sha256": "fc7869f1e898c8f4abcea55d48d518aa66394c7a7ec6926f28a799145bc27fd2"
+    },
+    {
+      "pfad": "text_encoder/4.safetensors",
+      "groesse": 2059005367,
+      "sha256": "85db6c3e1bed9640de44b320d61003463683517f5608c24505dceac376d52920"
+    },
+    {
+      "pfad": "text_encoder/5.safetensors",
+      "groesse": 2136050889,
+      "sha256": "9d25aecb9b4caafd93964ba9f98848a532fa163eac50b3bbc6a281405bba2c6e"
+    },
+    {
+      "pfad": "text_encoder/6.safetensors",
+      "groesse": 2141371164,
+      "sha256": "a5944f7fdbf7a820f12c309c3330f5b57902ead8372e5371ec9f3ba5dea9363d"
+    },
+    {
+      "pfad": "text_encoder/7.safetensors",
+      "groesse": 745924536,
+      "sha256": "b992997e679d2f11f3246d37585b20adca1ab6ea87d84a60b4c2e140004e6c6f"
+    },
+    {
+      "pfad": "text_encoder/model.safetensors.index.json",
+      "groesse": 49676,
+      "sha256": "80b4c6123becf02d2acab4f03657b852cbdcfa5f12d75999e93d2aafc8fd295c"
+    },
+    {
+      "pfad": "tokenizer/tokenizer.json",
+      "groesse": 11417006,
+      "sha256": "444a80c37c7f34f485c050cf374595a0cb7d88735459cf0505fd204453c33178"
+    },
+    {
+      "pfad": "tokenizer/tokenizer_config.json",
+      "groesse": 269,
+      "sha256": "ebf4e7d1ac441e3d84a44228a1a7392977b375a34c8fbc8b87c68e6a832e98ba"
+    },
+    {
+      "pfad": "transformer/0.safetensors",
+      "groesse": 2133769869,
+      "sha256": "4e947915ac175327d682905039fb503dd01ad8de314cd4d30e2bc731f80308de"
+    },
+    {
+      "pfad": "transformer/1.safetensors",
+      "groesse": 2142940100,
+      "sha256": "00cd0590af0eb798f1be4ea1852783b8d8e7ba1b9e6effe3aae2db7d78658a2d"
+    },
+    {
+      "pfad": "transformer/2.safetensors",
+      "groesse": 2103978106,
+      "sha256": "c3ae06a7e1692a930c5ca03e354aa997cd9604439811a7604a9c0ab9893ee5c8"
+    },
+    {
+      "pfad": "transformer/3.safetensors",
+      "groesse": 2121682265,
+      "sha256": "d4d397294bfdeebc721797d78127e6d96305bbd1f4d7b1dc3c63103c7d7afcd9"
+    },
+    {
+      "pfad": "transformer/4.safetensors",
+      "groesse": 2142940118,
+      "sha256": "b4eb741620a44edd6c7a74dd331fd2bdbec32649764309ecd396d27cbfcd0bb7"
+    },
+    {
+      "pfad": "transformer/5.safetensors",
+      "groesse": 2103978210,
+      "sha256": "6a8020082f87e6626f4b526bf0442a0e809821416eef329afcd79273e09bf5de"
+    },
+    {
+      "pfad": "transformer/6.safetensors",
+      "groesse": 449954258,
+      "sha256": "960f0766e38dc70cf82d1e4fea804ef6073e8636a1da2f89e4a41ec2d259c980"
+    },
+    {
+      "pfad": "transformer/model.safetensors.index.json",
+      "groesse": 241738,
+      "sha256": "8ea481ba9937eabde33f51dd9a5c484a09af383f8e0801c1df345847ed4c97ee"
+    },
+    {
+      "pfad": "vae/0.safetensors",
+      "groesse": 253586147,
+      "sha256": "ff6c24eb74447d7792281b22cda6f8a03a2e254a61dccf245979a0a53828044b"
+    },
+    {
+      "pfad": "vae/model.safetensors.index.json",
+      "groesse": 13512,
+      "sha256": "00eda531e44b433e52e154ddd0a736b9a165ea936016513ee8155605f4e7b85d"
+    }
+  ]
+}

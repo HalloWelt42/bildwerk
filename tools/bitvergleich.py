@@ -9,7 +9,8 @@ nebeneinander zum Ansehen.
 Ablauf je Bitbreite: in der Dienstdatei des Maschinenraums BILDWERK_QUANTISIERUNG setzen, den Dienst über die Leitstelle
 entladen (der nächste Auftrag startet ihn mit der neuen Einstellung), dann rechnen. Am Ende steht die Einstellung wieder
 wie vorher. Ergebnis: docs/messungen/bits/<dienst>.json und Bilder unter docs/messungen/bits/<dienst>/<bits>bit/.
-Bilddienste, die nur erzeugen (etwa MOSS-Image), rechnen die Motive des Portfolios statt der Aufgaben.
+Bilddienste, die nur erzeugen (etwa MOSS-Image), rechnen die Motive des Portfolios statt der Aufgaben, mit der
+Schrittzahl aus --schritte oder sonst der Vorgabe des Modells (FLUX 3: 16, MOSS-Image: 50).
 """
 
 from __future__ import annotations
@@ -64,6 +65,32 @@ def stand(dienst: str) -> dict:
     return next(x for x in httpx.get(f"{MASCHINENRAUM}/api/stand", timeout=10).json()["dienste"] if x["kennung"] == dienst)
 
 
+#: höchstens so lange warten, bis der Maschinenraum die letzte Arbeitsphase abgeschlossen hat
+SPITZE_WARTEN_S = 120
+
+
+def spitze_nach_arbeit(dienst: str) -> float | None:
+    """Die Speicherspitze des Laufs. Der Maschinenraum schließt eine Arbeitsphase erst in der Runde ab, in der der Dienst
+    nicht mehr rechnet; direkt nach der letzten Antwort fehlt sie noch (die ersten Reihen am 07.11.2026 lasen so alte
+    Werte). Deshalb warten, bis er ruht und die Spitze in zwei Runden gleich bleibt."""
+    vorher, ende = None, time.monotonic() + SPITZE_WARTEN_S
+    while time.monotonic() < ende:
+        s = stand(dienst)
+        if not s.get("aktiv") and s.get("spitze_gb") is not None and s["spitze_gb"] == vorher:
+            return s["spitze_gb"]
+        vorher = s.get("spitze_gb") if not s.get("aktiv") else None
+        time.sleep(6)
+    return stand(dienst).get("spitze_gb")
+
+
+def spitzen_verwerfen(dienst: str) -> None:
+    """Die gemerkten Arbeitsspitzen verwerfen, damit die Spitze nur diesen Lauf misst; prüft, dass es gewirkt hat."""
+    r = httpx.post(f"{MASCHINENRAUM}/api/dienste/{dienst}/spitzen_verwerfen", headers={"X-Maschinenraum": "1"}, timeout=10)
+    r.raise_for_status()
+    if not r.json().get("erfolg", True) or stand(dienst).get("spitze_gb") is not None:
+        raise SystemExit(f"{dienst}: Arbeitsspitzen nicht verworfen ({r.text[:200]}): Messung ungültig")
+
+
 def entladen(verwaltung: str, dienst: str) -> None:
     """Den Dienst über die Leitstelle entladen und warten, bis der Maschinenraum ihn als aus meldet."""
     lage = httpx.get(f"{verwaltung}/api/lage", verify=False, timeout=15).json()
@@ -106,12 +133,14 @@ def main() -> int:
     p.add_argument("--modell", required=True, help="Kennung im Bildwerk (für die Größe der Ablagen), etwa flux2-klein-entfernen")
     p.add_argument("--schluessel-datei", required=True, type=Path)
     p.add_argument("--aufgabe", help="nur diese Aufgabe")
+    p.add_argument("--schritte", type=int, help="Schritte beim Erzeugen; ohne Angabe die Vorgabe des Modells")
     a = p.parse_args()
     adresse = os.environ.get("LEITSTELLE_ADRESSE") or sys.exit("LEITSTELLE_ADRESSE fehlt")
     verwaltung = VERWALTUNG or re.sub(r"^http://([^:/]+):(\d+)", lambda m: f"https://{m.group(1)}:{int(m.group(2)) + 1}", adresse)
     cfg = beispiele.lesen()
     schluessel = a.schluessel_datei.expanduser().read_text().strip()
-    reihe: dict = {"dienst": a.dienst, "modell": a.modell, "gemessen_am": datetime.now(timezone.utc).isoformat(timespec="seconds"), "bits": {}}
+    reihe: dict = {"dienst": a.dienst, "modell": a.modell, "gemessen_am": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                   "schritte": a.schritte, "bits": {}}
     vorher = einstellen(a.dienst, BITS[0])
     try:
         with httpx.Client(base_url=adresse, headers={"Authorization": f"Bearer {schluessel}"}, timeout=httpx.Timeout(3600, connect=10)) as c:
@@ -121,7 +150,7 @@ def main() -> int:
                 time.sleep(WARTEN_NACH_UMSTELLEN_S)
                 entladen(verwaltung, a.dienst)
                 # die Speicherspitze je Lauf: der Maschinenraum hält sonst den Höchstwert über alle Läufe
-                httpx.post(f"{MASCHINENRAUM}/api/dienste/{a.dienst}/spitzen_verwerfen", headers={"X-Maschinenraum": "1"}, timeout=10).raise_for_status()
+                spitzen_verwerfen(a.dienst)
                 ausgabe = ZIEL / a.dienst / f"{bits}bit"
                 dauern = {}
                 if bearbeitet:
@@ -134,8 +163,11 @@ def main() -> int:
                         if a.aufgabe and aufgabe != a.aufgabe:
                             continue
                         beginn = time.monotonic()
-                        r = beispiele.senden(c, {"model": a.dienst, "prompt": " ".join(werte["motiv"].split()), "size": m["groesse"],
-                                                 "steps": m["schritte"], "seed": m["startwert"], "response_format": "b64_json"})
+                        anfrage = {"model": a.dienst, "prompt": " ".join(werte["motiv"].split()), "size": m["groesse"],
+                                   "seed": m["startwert"], "response_format": "b64_json"}
+                        if a.schritte:
+                            anfrage["steps"] = a.schritte
+                        r = beispiele.senden(c, anfrage)
                         if r.status_code != 200:
                             raise SystemExit(f"{aufgabe}: {r.status_code} {r.text[:200]}")
                         (ausgabe / aufgabe).mkdir(parents=True, exist_ok=True)
@@ -145,7 +177,7 @@ def main() -> int:
                 # ohne diese Probe wäre ein Lauf in der falschen Bitbreite nicht zu erkennen (erste Reihe 07.11.2026)
                 if (wirklich := gerechnet_mit(c, a.dienst)) != f"{bits}bit":
                     raise SystemExit(f"{a.dienst} lief mit {wirklich}, verlangt waren {bits} Bit: Messung ungültig")
-                reihe["bits"][bits] = {"dauer_s": dauern, "spitze_gb": stand(a.dienst).get("spitze_gb"), "ablage_gb": ablage_gb(a.modell, bits)}
+                reihe["bits"][bits] = {"dauer_s": dauern, "spitze_gb": spitze_nach_arbeit(a.dienst), "ablage_gb": ablage_gb(a.modell, bits)}
     finally:
         zuruecksetzen(a.dienst, vorher)
     acht, vier = (ZIEL / a.dienst / "8bit"), (ZIEL / a.dienst / "4bit")
